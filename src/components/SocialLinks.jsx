@@ -13,7 +13,7 @@ const socialLinks = [
     displayName: "Let's Connect",
     subText: "on LinkedIn",
     icon: Linkedin,
-    url: "https://www.linkedin.com/in/kelvin-fameyeh/",
+    url: "https://www.linkedin.com/in/kelvin-fameyeh-9479941a9/",
     color: "#0A66C2",
     gradient: "from-[#0A66C2] to-[#0077B5]",
     isPrimary: true
@@ -48,7 +48,7 @@ const socialLinks = [
   {
     name: "X",
     displayName: "X (Twitter)",
-    subText: "@Fameyeh_chale17",
+    subText: "@Fameyeh_chale",
     icon: ({ className, ...props }) => (
      <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M18.901 1.153h3.68l-8.04 9.136L24 22.846h-7.406L10.123 14.71 3.095 22.846H0l8.616-9.835L0 1.153h7.594l5.742 7.6 6.565-7.6Zm-1.306 19.644h2.036L5.564 3.262H3.383L17.595 20.797Z" fill="#000000"/>

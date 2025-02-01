@@ -1,24 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 
 const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  // Helper function to generate input classes dynamically
   const getInputClasses = (isTextArea = false) => {
     const baseClasses = `
       w-full p-4 rounded-xl bg-white/10 text-white placeholder-transparent 
       focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-2 
       focus:ring-offset-[#1c1e26] transition-all duration-300 peer
     `;
-
     const hoverFocusClasses = isFocused
       ? "shadow-[0_4px_12px_rgba(99,102,241,0.4)] border-[#6366f1]"
       : "border-white/20 hover:border-[#6366f1]";
-
     return `${baseClasses} ${hoverFocusClasses} ${isTextArea ? "h-52 pt-12" : "pl-12"}`;
   };
 
-  // Render input or textarea based on the field type
   const renderInputContent = () => {
     if (field === "message") {
       return (
@@ -35,7 +32,6 @@ const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
         />
       );
     }
-
     return (
       <input
         id={field}
@@ -54,7 +50,6 @@ const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
 
   return (
     <div className="relative w-full group">
-      {/* Icon and Label */}
       <div className="absolute left-4 top-4 flex items-center space-x-2 text-gray-400 transition-colors group-hover:text-[#6366f1]">
         <Icon className="w-5 h-5" />
         <label
@@ -69,11 +64,7 @@ const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
           {label}
         </label>
       </div>
-
-      {/* Input or Textarea */}
       {renderInputContent()}
-
-      {/* Focus/Hover Border Effect */}
       <div
         className={`
           absolute inset-0 border rounded-xl pointer-events-none 
@@ -83,6 +74,15 @@ const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
       ></div>
     </div>
   );
+};
+
+// Add prop validation
+InputField.propTypes = {
+  field: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  icon: PropTypes.elementType.isRequired,
+  formData: PropTypes.object.isRequired,
+  handleChange: PropTypes.func.isRequired,
 };
 
 export default InputField;

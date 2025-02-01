@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
-import { Link } from "react-router-dom";
 import SocialLinks from "../components/SocialLinks";
 import Komentar from "../components/Commentar";
 import Swal from "sweetalert2";
@@ -43,14 +42,21 @@ const ContactPage = () => {
     });
 
     try {
-      // Get form data
-      const form = e.target;
-      const formData = new FormData(form);
+      const response = await fetch('https://formsubmit.co/ajax/wycekhid10@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
 
-      // Submit form
-      await form.submit();
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
 
-      // Show success message
+      await response.json();
+
       Swal.fire({
         title: 'Success!',
         text: 'Your message has been sent successfully!',
@@ -60,13 +66,13 @@ const ContactPage = () => {
         timerProgressBar: true
       });
 
-      // Reset form
       setFormData({
         name: "",
         email: "",
         message: "",
       });
     } catch (error) {
+      console.error('Submission error:', error);
       Swal.fire({
         title: 'Error!',
         text: 'Something went wrong. Please try again later.',
@@ -104,7 +110,7 @@ const ContactPage = () => {
           data-aos-duration="1100"
           className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
         >
-          Got a question? Send me a message, and I'll get back to you soon.
+          Got a question? Send me a message, and I&apos;ll get back to you soon.
         </p>
       </div>
 
@@ -124,22 +130,13 @@ const ContactPage = () => {
                   Get in Touch
                 </h2>
                 <p className="text-gray-400">
-                  Have something to discuss? Send me a message and let's talk.
+                  Have something to discuss? Send me a message and let&apos;s talk.
                 </p>
               </div>
               <Share2 className="w-10 h-10 text-[#6366f1] opacity-50" />
             </div>
 
-            <form 
-              action="https://formsubmit.co/wycekhid10@gmail.com"
-              method="POST"
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-              {/* FormSubmit Configuration */}
-              <input type="hidden" name="_template" value="table" />
-              <input type="hidden" name="_captcha" value="false" />
-
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div
                 data-aos="fade-up"
                 data-aos-delay="100"

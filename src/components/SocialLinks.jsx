@@ -19,16 +19,16 @@ const socialLinks = [
   {
     name: "Instagram",
     displayName: "Instagram",
-    subText: "@_codegeas",
+    subText: "@kelvin.exe__",
     icon: Instagram,
-    url: "https://www.instagram.com/_codegeas/",
+    url: "https://www.instagram.com/kelvin.exe__?igsh=ZXBmdjluaHh3ZGxm&utm_source=qr",
     color: "#E4405F",
     gradient: "from-[#833AB4] via-[#E4405F] to-[#FCAF45]"
   },
   {
     name: "Contact",
     displayName: "Contact",
-    subText: "+233 548511391",
+    subText: "+49 15212990668",
     icon: () => (
       <svg
         width="24px"

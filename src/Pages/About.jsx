@@ -1,7 +1,8 @@
 import React, { useEffect, memo, useMemo } from "react"
-import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from "lucide-react"
+import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { usePortfolio } from "../context/PortfolioContext"
 
 // Memoized Components
 const Header = memo(() => (
@@ -113,21 +114,14 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 ));
 
 const AboutPage = () => {
-  // Memoized calculations
-  const { totalProjects, totalCertificates, YearExperience } = useMemo(() => {
-    const storedProjects = JSON.parse(localStorage.getItem("projects") || "[]");
-    const storedCertificates = JSON.parse(localStorage.getItem("certificates") || "[]");
-    
+  const { totalProjects, totalCertificates } = usePortfolio();
+
+  // Memoized year calculation
+  const YearExperience = useMemo(() => {
     const startDate = new Date("2021-09-06");
     const today = new Date();
-    const experience = today.getFullYear() - startDate.getFullYear() -
+    return today.getFullYear() - startDate.getFullYear() -
       (today < new Date(today.getFullYear(), startDate.getMonth(), startDate.getDate()) ? 1 : 0);
-
-    return {
-      totalProjects: storedProjects.length,
-      totalCertificates: storedCertificates.length,
-      YearExperience: experience
-    };
   }, []);
 
   // Optimized AOS initialization
@@ -214,7 +208,7 @@ const AboutPage = () => {
               data-aos="fade-right"
               data-aos-duration="1500"
             >
-              I’m a passionate Software Developer who thrives on solving real-world problems through clean, efficient code. 
+              I'm a passionate Software Developer who thrives on solving real-world problems through clean, efficient code. 
               I specialize in Web Development, Backend Engineering, and building scalable, user-friendly applications. 
               Constantly exploring new technologies, I aim to deliver impactful solutions and contribute to meaningful projects in the tech community.
             </p>

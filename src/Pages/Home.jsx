@@ -82,7 +82,7 @@ const TECH_STACK = ["PHP", "Python", "React", "Javascript", "Node.js", "Tailwind
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/Wrttnspknbrkn" },
   { icon: Linkedin, link: "https://www.linkedin.com/in/kelvin-fameyeh-9479941a9/" },
-  { icon: Instagram, link: "https://www.instagram.com/_codegeas/" }
+  { icon: Instagram, link: "https://www.instagram.com/kelvin.exe__?igsh=ZXBmdjluaHh3ZGxm&utm_source=qr" }
 ];
 
 const Home = () => {

@@ -10,6 +10,7 @@ import ContactPage from "./Pages/Contact";
 import ProjectDetails from "./components/ProjectDetail";
 import WelcomeScreen from "./Pages/WelcomeScreen";
 import { AnimatePresence } from 'framer-motion';
+import { PortfolioProvider } from "./context/PortfolioContext";
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
   return (
@@ -19,7 +20,6 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
           <WelcomeScreen onLoadingComplete={() => setShowWelcome(false)} />
         )}
       </AnimatePresence>
-
       {!showWelcome && (
         <>
           <Navbar />
@@ -32,11 +32,11 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
             <center>
               <hr className="my-3 border-gray-400 opacity-15 sm:mx-auto lg:my-6 text-center" />
               <span className="block text-sm pb-4 text-gray-500 text-center dark:text-gray-400">
-                © 2025{" "}
+                © {new Date().getFullYear()}{" "}
                 <a href="#" className="hover:underline">
-                  Kelvin Fameyeh ™
+                  Kelvin Fameyeh
                 </a>
-                 | All Rights Reserved.
+                {" "}| All Rights Reserved.
               </span>
             </center>
           </footer>
@@ -53,11 +53,11 @@ const ProjectPageLayout = () => (
       <center>
         <hr className="my-3 border-gray-400 opacity-15 sm:mx-auto lg:my-6 text-center" />
         <span className="block text-sm pb-4 text-gray-500 text-center dark:text-gray-400">
-          © 2023{" "}
+          © {new Date().getFullYear()}{" "}
           <a href="#" className="hover:underline">
-            Kelvin Fameyeh ™
+            Kelvin Fameyeh
           </a>
-           | All Rights Reserved.
+          {" "}| All Rights Reserved.
         </span>
       </center>
     </footer>
@@ -66,14 +66,16 @@ const ProjectPageLayout = () => (
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
-
+  
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage showWelcome={showWelcome} setShowWelcome={setShowWelcome} />} />
-        <Route path="/project/:id" element={<ProjectPageLayout />} />
-      </Routes>
-    </BrowserRouter>
+    <PortfolioProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage showWelcome={showWelcome} setShowWelcome={setShowWelcome} />} />
+          <Route path="/project/:id" element={<ProjectPageLayout />} />
+        </Routes>
+      </BrowserRouter>
+    </PortfolioProvider>
   );
 }
 

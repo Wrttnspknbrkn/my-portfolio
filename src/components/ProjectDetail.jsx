@@ -138,25 +138,47 @@ const ProjectDetails = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Try localStorage first, then check if we can get from context
     const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    const selectedProject = storedProjects.find((p) => String(p.id) === id);
+    
+    if (storedProjects.length === 0) {
+      // If localStorage is empty, wait a bit for Firebase data
+      const checkInterval = setInterval(() => {
+        const refreshedProjects = JSON.parse(localStorage.getItem("projects")) || [];
+        if (refreshedProjects.length > 0) {
+          clearInterval(checkInterval);
+          loadProjectData(refreshedProjects);
+        }
+      }, 500);
+      
+      // Clear interval after 5 seconds
+      setTimeout(() => clearInterval(checkInterval), 5000);
+    } else {
+      loadProjectData(storedProjects);
+    }
+    
+    function loadProjectData(projects) {
+      const selectedProject = projects.find((p) => String(p.id) === id);
 
-    if (selectedProject) {
-      const enhancedProject = {
-        ...selectedProject,
-        Features: selectedProject.Features || [],
-        TechStack: selectedProject.TechStack || [],
-        Github: selectedProject.Github || "https://github.com/Wrttnspknbrkn",
-        Year: selectedProject.Year || "2024",
-      };
-      setProject(enhancedProject);
+      if (selectedProject) {
+        const enhancedProject = {
+          ...selectedProject,
+          Features: selectedProject.Features || [],
+          TechStack: selectedProject.TechStack || [],
+          Github: selectedProject.Github || "https://github.com/Wrttnspknbrkn",
+          Year: selectedProject.Year || "2024",
+          Description: selectedProject.Description || "A detailed project showcasing modern web development techniques.",
+        };
+        setProject(enhancedProject);
 
-      // Find next project
-      const currentIndex = storedProjects.findIndex((p) => String(p.id) === id);
-      if (currentIndex < storedProjects.length - 1) {
-        setNextProject(storedProjects[currentIndex + 1]);
-      } else if (storedProjects.length > 1) {
-        setNextProject(storedProjects[0]);
+        // Find next project
+        const currentIndex = projects.findIndex((p) => String(p.id) === id);
+        if (currentIndex < projects.length - 1) {
+          setNextProject(projects[currentIndex + 1]);
+        } else if (projects.length > 1) {
+          setNextProject(projects[0]);
+        }
       }
     }
   }, [id]);
@@ -220,7 +242,7 @@ const ProjectDetails = () => {
           <img
             src={project.Img}
             alt={project.Title}
-            className={`w-full h-full object-cover object-center transition-opacity duration-1000 ${
+            className={`w-full h-full object-contain sm:object-cover object-center transition-opacity duration-1000 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}

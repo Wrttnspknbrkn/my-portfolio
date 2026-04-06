@@ -173,15 +173,12 @@ const Navbar = () => {
                 <a
                   href="#Home"
                   onClick={(e) => scrollToSection(e, "#Home")}
-                  className="group relative flex items-center gap-1.5"
+                  className="group relative flex items-center gap-2"
                 >
                   <span className="font-serif text-lg sm:text-xl tracking-tight text-foreground">
                     Kelvin
                   </span>
                   <span className="font-serif text-lg sm:text-xl tracking-tight text-accent">
-                    Ajar
-                  </span>
-                  <span className="font-serif text-lg sm:text-xl tracking-tight text-foreground-muted hidden sm:inline">
                     Fameyeh
                   </span>
                   <motion.span
@@ -192,14 +189,11 @@ const Navbar = () => {
                   />
                 </a>
               ) : (
-                <Link to="/" className="group relative flex items-center gap-1.5">
+                <Link to="/" className="group relative flex items-center gap-2">
                   <span className="font-serif text-lg sm:text-xl tracking-tight text-foreground">
                     Kelvin
                   </span>
                   <span className="font-serif text-lg sm:text-xl tracking-tight text-accent">
-                    Ajar
-                  </span>
-                  <span className="font-serif text-lg sm:text-xl tracking-tight text-foreground-muted hidden sm:inline">
                     Fameyeh
                   </span>
                 </Link>
@@ -404,7 +398,7 @@ const Navbar = () => {
                     </span>
                   </div>
                   <span className="font-mono text-micro text-foreground-muted">
-                    2024
+                    2025
                   </span>
                 </div>
               </motion.div>

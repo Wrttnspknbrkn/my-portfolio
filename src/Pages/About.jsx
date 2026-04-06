@@ -214,10 +214,10 @@ const AboutPage = () => {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start overflow-visible">
           {/* Left column - Image */}
           <motion.div 
-            className="relative lg:sticky lg:top-32 overflow-visible"
+            className="relative lg:sticky lg:top-32 mb-12 lg:mb-0"
             style={{ y: imageY, rotate: imageRotate }}
           >
-            <div className="relative aspect-[4/5] overflow-visible">
+            <div className="relative aspect-[4/5]">
               <RevealImage src="/profile.jpeg" alt="Kelvin Fameyeh" />
 
               {/* Decorative frame */}
@@ -234,15 +234,15 @@ const AboutPage = () => {
               </motion.div>
             </div>
 
-            {/* Experience badge - smaller on mobile */}
+            {/* Experience badge - overlaps image on all screens */}
             <motion.div
-              className="absolute -bottom-4 sm:-bottom-8 right-4 sm:-right-8 lg:right-auto lg:-left-8 bg-background px-4 sm:px-8 py-3 sm:py-6 border border-accent/30"
+              className="absolute -bottom-6 -right-2 sm:-bottom-10 sm:-right-6 lg:-bottom-10 lg:right-auto lg:-left-10 bg-background px-5 sm:px-8 py-4 sm:py-6 border border-accent/30 shadow-xl z-30"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
-              <span className="font-serif text-heading sm:text-display text-accent">
+              <span className="font-serif text-subheading sm:text-display text-accent">
                 {yearsExperience}+
               </span>
               <span className="block font-sans text-micro sm:text-caption text-foreground-muted uppercase tracking-wider mt-1 sm:mt-2">

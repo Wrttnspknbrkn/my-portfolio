@@ -438,31 +438,23 @@ const Home = () => {
         </motion.div>
       </motion.button>
 
-      {/* Side decorations */}
+      {/* Side decorations - subtle lines only */}
       <motion.div
-        className="hidden xl:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col items-center gap-4"
+        className="hidden xl:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col items-center"
         initial={{ opacity: 0, x: -20 }}
-        animate={isLoaded ? { opacity: 1, x: 0 } : {}}
+        animate={isLoaded ? { opacity: 0.3, x: 0 } : {}}
         transition={{ duration: 0.6, delay: 2 }}
       >
-        <div className="w-px h-20 bg-gradient-to-b from-transparent via-accent to-transparent" />
-        <span className="font-mono text-caption text-foreground-muted/50 tracking-wider" style={{ writingMode: 'vertical-rl' }}>
-          CRAFTING DIGITAL
-        </span>
-        <div className="w-px h-20 bg-gradient-to-b from-accent via-accent to-transparent" />
+        <div className="w-px h-40 bg-gradient-to-b from-transparent via-accent to-transparent" />
       </motion.div>
 
       <motion.div
-        className="hidden xl:flex absolute right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-4"
+        className="hidden xl:flex absolute right-8 top-1/2 -translate-y-1/2 flex-col items-center"
         initial={{ opacity: 0, x: 20 }}
-        animate={isLoaded ? { opacity: 1, x: 0 } : {}}
+        animate={isLoaded ? { opacity: 0.3, x: 0 } : {}}
         transition={{ duration: 0.6, delay: 2 }}
       >
-        <div className="w-px h-20 bg-gradient-to-b from-transparent via-accent to-transparent" />
-        <span className="font-mono text-caption text-foreground-muted/50 tracking-wider" style={{ writingMode: 'vertical-rl' }}>
-          HAMBURG, GERMANY
-        </span>
-        <div className="w-px h-20 bg-gradient-to-b from-accent via-accent to-transparent" />
+        <div className="w-px h-40 bg-gradient-to-b from-transparent via-accent to-transparent" />
       </motion.div>
     </section>
   );

@@ -240,7 +240,7 @@ const Footer = () => {
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              {currentYear} Kelvin Fameyeh. All rights reserved.
+              <span className="text-accent">&copy;</span> {currentYear} <span className="text-foreground">Kelvin Ajar Fameyeh</span>. All rights reserved.
             </motion.p>
 
             {/* Tech stack badge */}

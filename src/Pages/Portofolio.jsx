@@ -1,28 +1,37 @@
-import React, { useState, useCallback, useRef, memo } from "react";
+import React, { useState, useCallback, useRef, memo, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import CardProject from "../components/CardProject";
 import TechStackIcon from "../components/TechStackIcon";
 import Certificate from "../components/Certificate";
-import { ArrowRight, Code2, Award, Layers } from "lucide-react";
+import { ArrowRight, Code2, Award, Layers, Sparkles } from "lucide-react";
 import { usePortfolio } from "../context/PortfolioContext";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// Tab button component
-const TabButton = memo(({ icon: Icon, label, isActive, onClick, index }) => (
+gsap.registerPlugin(ScrollTrigger);
+
+// Tab button component with enhanced styling
+const TabButton = memo(({ icon: Icon, label, isActive, onClick, count }) => (
   <motion.button
     onClick={onClick}
-    className={`relative flex items-center gap-3 px-6 py-4 font-sans text-body-sm uppercase tracking-wider transition-colors duration-300 ${
+    className={`relative flex items-center gap-3 px-5 py-4 font-sans text-body-sm uppercase tracking-wider transition-all duration-500 w-full lg:w-auto ${
       isActive
-        ? "text-accent"
-        : "text-foreground-muted hover:text-foreground"
+        ? "text-accent bg-accent/10"
+        : "text-foreground-muted hover:text-foreground hover:bg-background-secondary/50"
     }`}
     whileHover={{ x: 4 }}
     whileTap={{ scale: 0.98 }}
   >
     <Icon className="w-4 h-4" strokeWidth={1.5} />
-    <span>{label}</span>
+    <span className="flex-1 text-left">{label}</span>
+    {count !== undefined && (
+      <span className={`font-mono text-caption px-2 py-0.5 rounded ${isActive ? 'bg-accent/20 text-accent' : 'bg-border/50 text-foreground-muted'}`}>
+        {count}
+      </span>
+    )}
     {isActive && (
       <motion.div
-        className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-8 bg-accent"
+        className="absolute left-0 top-0 bottom-0 w-0.5 bg-accent"
         layoutId="activeTab"
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       />
@@ -30,19 +39,19 @@ const TabButton = memo(({ icon: Icon, label, isActive, onClick, index }) => (
   </motion.button>
 ));
 
-// See more button
+// See more button with enhanced animation
 const SeeMoreButton = memo(({ onClick, isShowingMore }) => (
   <motion.button
     onClick={onClick}
-    className="group flex items-center gap-2 px-6 py-3 border border-border hover:border-accent text-foreground-muted hover:text-accent transition-all duration-300"
+    className="group flex items-center gap-3 px-8 py-4 border border-border hover:border-accent bg-transparent hover:bg-accent/5 text-foreground-muted hover:text-accent transition-all duration-500"
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
   >
-    <span className="font-sans text-body-sm">
+    <span className="font-sans text-body-sm uppercase tracking-wider">
       {isShowingMore ? "Show Less" : "View All"}
     </span>
     <motion.span
-      animate={{ rotate: isShowingMore ? 180 : 0 }}
+      animate={{ rotate: isShowingMore ? -90 : 0 }}
       transition={{ duration: 0.3 }}
     >
       <ArrowRight className="w-4 h-4" />
@@ -52,30 +61,24 @@ const SeeMoreButton = memo(({ onClick, isShowingMore }) => (
 
 // Tech stack data
 const techStacks = [
-  { icon: "html.svg", language: "HTML" },
-  { icon: "css.svg", language: "CSS" },
+  { icon: "html.svg", language: "HTML5" },
+  { icon: "css.svg", language: "CSS3" },
   { icon: "javascript.svg", language: "JavaScript" },
-  { icon: "tailwind.svg", language: "Tailwind CSS" },
-  { icon: "reactjs.svg", language: "ReactJS" },
+  { icon: "tailwind.svg", language: "Tailwind" },
+  { icon: "reactjs.svg", language: "React" },
   { icon: "vite.svg", language: "Vite" },
-  { icon: "nodejs.svg", language: "Node JS" },
+  { icon: "nodejs.svg", language: "Node.js" },
   { icon: "bootstrap.svg", language: "Bootstrap" },
   { icon: "firebase.svg", language: "Firebase" },
-  { icon: "MUI.svg", language: "Material UI" },
+  { icon: "MUI.svg", language: "MUI" },
   { icon: "vercel.svg", language: "Vercel" },
-  { icon: "SweetAlert.svg", language: "SweetAlert2" },
+  { icon: "SweetAlert.svg", language: "SweetAlert" },
   { icon: "php.svg", language: "PHP" },
   { icon: "python.svg", language: "Python" },
-  { icon: "mysql.svg", language: "mySQL" },
+  { icon: "mysql.svg", language: "MySQL" },
   { icon: "jquery.svg", language: "jQuery" },
   { icon: "apache.svg", language: "Apache" },
   { icon: "git.svg", language: "Git" },
-];
-
-const tabs = [
-  { id: "projects", label: "Projects", icon: Code2 },
-  { id: "certificates", label: "Certificates", icon: Award },
-  { id: "stack", label: "Tech Stack", icon: Layers },
 ];
 
 export default function Portfolio() {
@@ -85,10 +88,28 @@ export default function Portfolio() {
   const { projects, certificates } = usePortfolio();
   const containerRef = useRef(null);
   const headerRef = useRef(null);
+  const techGridRef = useRef(null);
   const isHeaderInView = useInView(headerRef, { once: true, margin: "-100px" });
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-  const initialItems = isMobile ? 4 : 6;
+  const initialItems = 6;
+
+  // GSAP animation for tech stack
+  useEffect(() => {
+    if (activeTab === "stack" && techGridRef.current) {
+      const items = techGridRef.current.querySelectorAll('.tech-item');
+      gsap.fromTo(items, 
+        { opacity: 0, y: 30, scale: 0.9 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1,
+          duration: 0.5, 
+          stagger: 0.03,
+          ease: "power3.out"
+        }
+      );
+    }
+  }, [activeTab]);
 
   const toggleShowMore = useCallback((type) => {
     if (type === "projects") {
@@ -105,13 +126,19 @@ export default function Portfolio() {
     ? certificates
     : certificates.slice(0, initialItems);
 
+  const tabs = [
+    { id: "projects", label: "Projects", icon: Code2, count: projects.length },
+    { id: "certificates", label: "Certificates", icon: Award, count: certificates.length },
+    { id: "stack", label: "Tech Stack", icon: Layers, count: techStacks.length },
+  ];
+
   const contentVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.4,
+        duration: 0.5,
         ease: [0.4, 0, 0.2, 1],
       },
     },
@@ -131,40 +158,50 @@ export default function Portfolio() {
       className="relative py-section bg-background overflow-hidden"
       id="Portofolio"
     >
-      {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      {/* Background elements */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(201, 168, 124, 0.5) 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
+          }}
+        />
+      </div>
+      <div className="absolute top-1/3 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/3 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div ref={headerRef} className="mb-16">
-          <motion.span
-            className="font-sans text-caption uppercase tracking-[0.3em] text-accent block mb-4"
+          <motion.div
+            className="flex items-center gap-4 mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            Portfolio
-          </motion.span>
-          <motion.div
-            className="w-12 h-px bg-accent mb-8"
-            initial={{ scaleX: 0 }}
-            animate={isHeaderInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ transformOrigin: "left" }}
-          />
+            <span className="font-mono text-caption uppercase tracking-[0.3em] text-accent">
+              02
+            </span>
+            <div className="w-12 h-px bg-accent" />
+            <span className="font-mono text-caption uppercase tracking-[0.3em] text-foreground-muted">
+              Portfolio
+            </span>
+          </motion.div>
+          
           <motion.h2
-            className="font-serif text-display text-foreground max-w-2xl"
+            className="font-serif text-display text-foreground max-w-2xl mb-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Selected <span className="text-gradient">work</span> and expertise
+          </motion.h2>
+          <motion.p
+            className="font-sans text-body text-foreground-muted max-w-xl"
             initial={{ opacity: 0, y: 30 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            Selected <span className="text-accent">work</span> and expertise
-          </motion.h2>
-          <motion.p
-            className="font-sans text-body text-foreground-muted max-w-xl mt-4"
-            initial={{ opacity: 0, y: 30 }}
-            animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
           >
             Explore my journey through projects, certifications, and technical
             expertise. Each piece represents a milestone in continuous learning.
@@ -172,24 +209,26 @@ export default function Portfolio() {
         </div>
 
         {/* Tabs and content layout */}
-        <div className="grid lg:grid-cols-[200px_1fr] gap-12">
+        <div className="grid lg:grid-cols-[240px_1fr] gap-8 lg:gap-12">
           {/* Tab navigation */}
           <motion.div
-            className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-l border-border"
+            className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide lg:sticky lg:top-32 lg:self-start"
             initial={{ opacity: 0, x: -20 }}
             animate={isHeaderInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {tabs.map((tab, index) => (
-              <TabButton
-                key={tab.id}
-                icon={tab.icon}
-                label={tab.label}
-                isActive={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                index={index}
-              />
-            ))}
+            <div className="flex lg:flex-col gap-1 min-w-max lg:min-w-0 lg:border-l border-border">
+              {tabs.map((tab) => (
+                <TabButton
+                  key={tab.id}
+                  icon={tab.icon}
+                  label={tab.label}
+                  count={tab.count}
+                  isActive={activeTab === tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                />
+              ))}
+            </div>
           </motion.div>
 
           {/* Tab content */}
@@ -204,7 +243,7 @@ export default function Portfolio() {
                   animate="visible"
                   exit="exit"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     {displayedProjects.map((project, index) => (
                       <motion.div
                         key={project.id || index}
@@ -246,7 +285,7 @@ export default function Portfolio() {
                   animate="visible"
                   exit="exit"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                     {displayedCertificates.map((certificate, index) => (
                       <motion.div
                         key={index}
@@ -254,7 +293,7 @@ export default function Portfolio() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
                           duration: 0.5,
-                          delay: index * 0.1,
+                          delay: index * 0.08,
                           ease: [0.4, 0, 0.2, 1],
                         }}
                       >
@@ -282,25 +321,42 @@ export default function Portfolio() {
                   animate="visible"
                   exit="exit"
                 >
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                  {/* Intro text */}
+                  <div className="mb-8 flex items-center gap-3">
+                    <Sparkles className="w-5 h-5 text-accent" />
+                    <p className="font-sans text-body text-foreground-muted">
+                      Technologies and tools I work with on a daily basis
+                    </p>
+                  </div>
+                  
+                  {/* Tech grid */}
+                  <div 
+                    ref={techGridRef}
+                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4"
+                  >
                     {techStacks.map((stack, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                          duration: 0.4,
-                          delay: index * 0.03,
-                          ease: [0.4, 0, 0.2, 1],
-                        }}
-                      >
+                      <div key={index} className="tech-item">
                         <TechStackIcon
                           TechStackIcon={stack.icon}
                           Language={stack.language}
                         />
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
+                  
+                  {/* Additional info */}
+                  <motion.div
+                    className="mt-12 p-6 border border-border bg-background-secondary/30"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <p className="font-sans text-body-sm text-foreground-muted text-center">
+                      Always learning and exploring new technologies. 
+                      Currently diving deeper into <span className="text-accent">TypeScript</span>, 
+                      <span className="text-accent"> Next.js</span>, and <span className="text-accent">Cloud Services</span>.
+                    </p>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./index.css";
 import Home from "./Pages/Home";
@@ -10,40 +10,14 @@ import Portofolio from "./Pages/Portofolio";
 import ContactPage from "./Pages/Contact";
 import ProjectDetails from "./components/ProjectDetail";
 import WelcomeScreen from "./Pages/WelcomeScreen";
+import CV from "./Pages/CV";
+import Footer from "./components/Footer";
 import { AnimatePresence } from "framer-motion";
 import { PortfolioProvider } from "./context/PortfolioContext";
 
-// Footer component
-const Footer = () => (
-  <footer className="py-12 border-t border-border">
-    <div className="max-w-7xl mx-auto px-6 lg:px-8">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <span className="font-serif text-lg text-foreground">Kelvin</span>
-          <span className="font-serif text-lg text-accent">.</span>
-        </div>
-
-        {/* Links */}
-        <nav className="flex items-center gap-8">
-          {["Home", "About", "Work", "Contact"].map((item) => (
-            <a
-              key={item}
-              href={`#${item === "Work" ? "Portofolio" : item}`}
-              className="font-sans text-body-sm text-foreground-muted hover:text-accent transition-colors duration-300"
-            >
-              {item}
-            </a>
-          ))}
-        </nav>
-
-        {/* Copyright */}
-        <p className="font-sans text-caption text-foreground-muted">
-          {new Date().getFullYear()} Kelvin Fameyeh
-        </p>
-      </div>
-    </div>
-  </footer>
+// Noise overlay for premium texture
+const NoiseOverlay = () => (
+  <div className="noise-overlay pointer-events-none" aria-hidden="true" />
 );
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
@@ -58,17 +32,19 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
+          className="overflow-x-hidden"
         >
           <Navbar />
           <AnimatedBackground />
-          <main>
+          <main className="overflow-x-hidden">
             <Home />
             <About />
             <Portofolio />
             <ContactPage />
           </main>
           <Footer />
+          <NoiseOverlay />
         </motion.div>
       )}
     </>
@@ -80,30 +56,58 @@ const ProjectPageLayout = () => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.6 }}
+    className="overflow-x-hidden"
   >
+    <Navbar />
     <ProjectDetails />
     <Footer />
+    <NoiseOverlay />
+  </motion.div>
+);
+
+const CVPageLayout = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.6 }}
+    className="overflow-x-hidden"
+  >
+    <CV />
+    <NoiseOverlay />
   </motion.div>
 );
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
 
+  // Prevent horizontal scroll globally
+  useEffect(() => {
+    document.body.style.overflowX = "hidden";
+    document.documentElement.style.overflowX = "hidden";
+    return () => {
+      document.body.style.overflowX = "";
+      document.documentElement.style.overflowX = "";
+    };
+  }, []);
+
   return (
     <PortfolioProvider>
       <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <LandingPage
-                showWelcome={showWelcome}
-                setShowWelcome={setShowWelcome}
-              />
-            }
-          />
-          <Route path="/project/:id" element={<ProjectPageLayout />} />
-        </Routes>
+        <div className="overflow-x-hidden w-full">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <LandingPage
+                  showWelcome={showWelcome}
+                  setShowWelcome={setShowWelcome}
+                />
+              }
+            />
+            <Route path="/project/:id" element={<ProjectPageLayout />} />
+            <Route path="/cv" element={<CVPageLayout />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </PortfolioProvider>
   );

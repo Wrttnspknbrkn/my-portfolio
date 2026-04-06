@@ -195,21 +195,20 @@ const ContactPage = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section header */}
         <div ref={headerRef} className="mb-16">
-          <motion.span
-            className="font-sans text-caption uppercase tracking-[0.3em] text-accent block mb-4"
+          <motion.div
+            className="flex items-center gap-4 mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            Contact
-          </motion.span>
-          <motion.div
-            className="w-12 h-px bg-accent mb-8"
-            initial={{ scaleX: 0 }}
-            animate={isHeaderInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ transformOrigin: "left" }}
-          />
+            <span className="font-mono text-caption uppercase tracking-[0.3em] text-accent">
+              03
+            </span>
+            <div className="w-12 h-px bg-accent" />
+            <span className="font-mono text-caption uppercase tracking-[0.3em] text-foreground-muted">
+              Contact
+            </span>
+          </motion.div>
           <motion.h2
             className="font-serif text-display text-foreground max-w-2xl"
             initial={{ opacity: 0, y: 30 }}

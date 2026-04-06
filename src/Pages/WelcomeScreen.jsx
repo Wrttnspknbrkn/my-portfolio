@@ -35,7 +35,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
     // Animate progress bar with GSAP for smoother effect
     gsap.to(progressBarRef.current, {
       width: '100%',
-      duration: 2.8,
+      duration: 4.8,
       ease: 'power2.inOut',
       onUpdate: function() {
         const progress = Math.round(this.progress() * 100);
@@ -43,18 +43,18 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       }
     });
 
-    // Cycle through words
+    // Cycle through words - slower pace for readability
     const wordInterval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 500);
+    }, 1200);
 
-    // Complete loading after animation
+    // Complete loading after animation - extended for better word display
     const timer = setTimeout(() => {
       setIsLoading(false);
       setTimeout(() => {
         onLoadingComplete?.();
       }, 800);
-    }, 3200);
+    }, 5200);
 
     return () => {
       clearTimeout(timer);
@@ -238,10 +238,10 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 <motion.p
                   key={currentWord}
                   className="font-sans text-body-lg text-accent tracking-widest uppercase"
-                  initial={{ y: 40, opacity: 0, filter: 'blur(8px)' }}
+                  initial={{ y: 30, opacity: 0, filter: 'blur(6px)' }}
                   animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-                  exit={{ y: -40, opacity: 0, filter: 'blur(8px)' }}
-                  transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                  exit={{ y: -30, opacity: 0, filter: 'blur(6px)' }}
+                  transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 >
                   {words[currentWord]}
                 </motion.p>

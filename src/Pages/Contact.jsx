@@ -86,21 +86,21 @@ const SocialCard = memo(({ icon: Icon, label, href, username, index }) => (
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="group flex items-center justify-between p-6 border border-border hover:border-accent transition-colors duration-300"
+    className="group flex items-center justify-between p-4 sm:p-5 border border-border hover:border-accent transition-colors duration-300 overflow-hidden"
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.5, delay: index * 0.1 }}
     whileHover={{ x: 4 }}
   >
-    <div className="flex items-center gap-4">
-      <Icon className="w-5 h-5 text-foreground-muted group-hover:text-accent transition-colors duration-300" strokeWidth={1.5} />
-      <div>
+    <div className="flex items-center gap-3 min-w-0 flex-1">
+      <Icon className="w-5 h-5 flex-shrink-0 text-foreground-muted group-hover:text-accent transition-colors duration-300" strokeWidth={1.5} />
+      <div className="min-w-0">
         <p className="font-sans text-body-sm text-foreground">{label}</p>
-        <p className="font-sans text-caption text-foreground-muted">{username}</p>
+        <p className="font-sans text-caption text-foreground-muted truncate">{username}</p>
       </div>
     </div>
-    <ArrowUpRight className="w-4 h-4 text-foreground-muted group-hover:text-accent transition-colors duration-300" />
+    <ArrowUpRight className="w-4 h-4 flex-shrink-0 ml-2 text-foreground-muted group-hover:text-accent transition-colors duration-300" />
   </motion.a>
 ));
 
@@ -188,11 +188,11 @@ const ContactPage = () => {
   };
 
   return (
-    <section className="relative py-section bg-background overflow-hidden" id="Contact">
+    <section className="relative py-section bg-background overflow-x-hidden" id="Contact">
       {/* Background decoration */}
       <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/[0.02]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div ref={headerRef} className="mb-16">
           <motion.div
@@ -228,7 +228,7 @@ const ContactPage = () => {
         </div>
 
         {/* Main content grid */}
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Contact form */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -277,7 +277,7 @@ const ContactPage = () => {
               <h3 className="font-sans text-caption uppercase tracking-wider text-foreground-muted mb-6">
                 Connect with me
               </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {socialLinks.map((social, index) => (
                   <SocialCard key={social.label} {...social} index={index} />
                 ))}
@@ -294,7 +294,7 @@ const ContactPage = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="sticky top-32">
-              <div className="border border-border p-6 lg:p-8">
+              <div className="border border-border p-4 sm:p-6 lg:p-8 overflow-hidden">
                 <h3 className="font-serif text-heading text-foreground mb-6">
                   Guest Book
                 </h3>

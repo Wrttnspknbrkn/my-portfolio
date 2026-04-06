@@ -33,7 +33,7 @@ const experiences = [
   {
     title: "Software Development Lead",
     company: "GydGen",
-    location: "Hamburg, Germany",
+    location: "Accra, Ghana",
     period: "2021 - Present",
     type: "current",
     achievements: [

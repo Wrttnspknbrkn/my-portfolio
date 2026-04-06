@@ -1,16 +1,69 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import gsap from 'gsap';
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [currentWord, setCurrentWord] = useState(0);
+  const [canSkip, setCanSkip] = useState(false);
+  const [interactionCount, setInteractionCount] = useState(0);
   const containerRef = useRef(null);
   const progressBarRef = useRef(null);
   const particlesRef = useRef(null);
 
   const words = ['Create', 'Design', 'Develop', 'Inspire'];
+
+  // Mouse position for interactive cursor effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 150 };
+  const cursorX = useSpring(mouseX, springConfig);
+  const cursorY = useSpring(mouseY, springConfig);
+
+  // Handle mouse move for interactive effect
+  const handleMouseMove = useCallback((e) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      mouseX.set(e.clientX - rect.left);
+      mouseY.set(e.clientY - rect.top);
+    }
+  }, [mouseX, mouseY]);
+
+  // Handle click/tap interaction
+  const handleInteraction = useCallback(() => {
+    setInteractionCount(prev => {
+      const newCount = prev + 1;
+      // Create a ripple effect at click position
+      if (containerRef.current) {
+        const ripple = document.createElement('div');
+        ripple.className = 'absolute w-4 h-4 bg-accent/40 rounded-full pointer-events-none';
+        ripple.style.left = `${cursorX.get()}px`;
+        ripple.style.top = `${cursorY.get()}px`;
+        ripple.style.transform = 'translate(-50%, -50%)';
+        containerRef.current.appendChild(ripple);
+        
+        gsap.to(ripple, {
+          scale: 20,
+          opacity: 0,
+          duration: 0.8,
+          ease: 'power2.out',
+          onComplete: () => ripple.remove()
+        });
+      }
+      return newCount;
+    });
+  }, [cursorX, cursorY]);
+
+  // Skip to main content
+  const skipToContent = useCallback(() => {
+    if (canSkip) {
+      setIsLoading(false);
+      setTimeout(() => {
+        onLoadingComplete?.();
+      }, 500);
+    }
+  }, [canSkip, onLoadingComplete]);
 
   // GSAP particle animations
   useEffect(() => {
@@ -35,32 +88,36 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
     // Animate progress bar with GSAP for smoother effect
     gsap.to(progressBarRef.current, {
       width: '100%',
-      duration: 4.8,
+      duration: 4.5,
       ease: 'power2.inOut',
       onUpdate: function() {
-        const progress = Math.round(this.progress() * 100);
-        setProgress(progress);
+        const prog = Math.round(this.progress() * 100);
+        setProgress(prog);
+        // Allow skip after 40% progress
+        if (prog >= 40 && !canSkip) {
+          setCanSkip(true);
+        }
       }
     });
 
-    // Cycle through words - slower pace for readability
+    // Cycle through words
     const wordInterval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 1200);
+    }, 1000);
 
-    // Complete loading after animation - extended for better word display
+    // Complete loading after animation
     const timer = setTimeout(() => {
       setIsLoading(false);
       setTimeout(() => {
         onLoadingComplete?.();
       }, 800);
-    }, 5200);
+    }, 5000);
 
     return () => {
       clearTimeout(timer);
       clearInterval(wordInterval);
     };
-  }, [onLoadingComplete]);
+  }, [onLoadingComplete, canSkip]);
 
   const containerVariants = {
     exit: {
@@ -100,7 +157,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
   const name = "Kelvin Fameyeh";
 
   // Generate particles
-  const particles = Array.from({ length: 20 }, (_, i) => ({
+  const particles = Array.from({ length: 25 }, (_, i) => ({
     id: i,
     size: Math.random() * 4 + 2,
     left: Math.random() * 100,
@@ -113,11 +170,30 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       {isLoading && (
         <motion.div
           ref={containerRef}
-          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center overflow-hidden cursor-none"
           initial={{ opacity: 1 }}
           exit="exit"
           variants={containerVariants}
+          onMouseMove={handleMouseMove}
+          onClick={handleInteraction}
         >
+          {/* Custom cursor follower - desktop only */}
+          <motion.div
+            className="hidden md:block fixed w-6 h-6 border border-accent/50 rounded-full pointer-events-none z-50 mix-blend-difference"
+            style={{ x: cursorX, y: cursorY, translateX: '-50%', translateY: '-50%' }}
+          />
+          <motion.div
+            className="hidden md:block fixed w-2 h-2 bg-accent rounded-full pointer-events-none z-50"
+            style={{ 
+              x: cursorX, 
+              y: cursorY, 
+              translateX: '-50%', 
+              translateY: '-50%',
+            }}
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          />
+
           {/* Animated particles */}
           <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
             {particles.map((p) => (
@@ -145,7 +221,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             />
           </div>
 
-          {/* Animated gradient orbs */}
+          {/* Animated gradient orbs - follow mouse slightly */}
           <motion.div
             className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-accent/10 blur-3xl"
             animate={{
@@ -233,7 +309,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             </div>
 
             {/* Animated word carousel with fade */}
-            <div className="h-10 overflow-hidden mb-14">
+            <div className="h-10 overflow-hidden mb-12">
               <AnimatePresence mode="wait">
                 <motion.p
                   key={currentWord}
@@ -247,6 +323,19 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 </motion.p>
               </AnimatePresence>
             </div>
+
+            {/* Interaction hint */}
+            <motion.p
+              className="font-sans text-micro text-foreground-muted/50 mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5 }}
+            >
+              {interactionCount > 0 
+                ? `${interactionCount} interaction${interactionCount > 1 ? 's' : ''}`
+                : 'Click anywhere to interact'
+              }
+            </motion.p>
 
             {/* Progress indicator */}
             <div className="relative w-56 mx-auto">
@@ -276,6 +365,21 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                   transition={{ duration: 1, repeat: Infinity }}
                 />
               </motion.div>
+
+              {/* Skip option */}
+              <AnimatePresence>
+                {canSkip && (
+                  <motion.button
+                    className="mt-6 font-mono text-micro text-accent/70 hover:text-accent transition-colors"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    onClick={skipToContent}
+                  >
+                    Click to skip
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

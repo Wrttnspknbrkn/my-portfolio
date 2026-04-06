@@ -141,6 +141,8 @@ const ProjectDetails = () => {
     
     // Try localStorage first, then check if we can get from context
     const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
+    console.log("[v0] ProjectDetail - Loaded projects from localStorage:", storedProjects.length, "projects");
+    console.log("[v0] ProjectDetail - Looking for project with id:", id);
     
     if (storedProjects.length === 0) {
       // If localStorage is empty, wait a bit for Firebase data
@@ -159,21 +161,25 @@ const ProjectDetails = () => {
     }
     
     function loadProjectData(projects) {
-      const selectedProject = projects.find((p) => String(p.id) === id);
+      const selectedProject = projects.find((p) => String(p.id) === id || p.Title === decodeURIComponent(id));
 
+      console.log("[v0] ProjectDetail - Found project:", selectedProject);
       if (selectedProject) {
+        // Handle different field names from Firebase (Description vs Deskripsi, etc.)
         const enhancedProject = {
           ...selectedProject,
-          Features: selectedProject.Features || [],
-          TechStack: selectedProject.TechStack || [],
-          Github: selectedProject.Github || "https://github.com/Wrttnspknbrkn",
-          Year: selectedProject.Year || "2024",
-          Description: selectedProject.Description || "A detailed project showcasing modern web development techniques.",
+          Features: selectedProject.Features || selectedProject.Fitur || [],
+          TechStack: selectedProject.TechStack || selectedProject.Tech || [],
+          Github: selectedProject.Github || selectedProject.github || "https://github.com/Wrttnspknbrkn",
+          Year: selectedProject.Year || selectedProject.Tahun || new Date().getFullYear().toString(),
+          Description: selectedProject.Description || selectedProject.Deskripsi || "A detailed project showcasing modern web development techniques and best practices.",
+          Link: selectedProject.Link || selectedProject.link || selectedProject.Demo || "",
         };
+        console.log("[v0] ProjectDetail - Enhanced project:", enhancedProject);
         setProject(enhancedProject);
 
         // Find next project
-        const currentIndex = projects.findIndex((p) => String(p.id) === id);
+        const currentIndex = projects.findIndex((p) => String(p.id) === id || p.Title === decodeURIComponent(id));
         if (currentIndex < projects.length - 1) {
           setNextProject(projects[currentIndex + 1]);
         } else if (projects.length > 1) {
@@ -320,9 +326,9 @@ const ProjectDetails = () => {
       </section>
 
       {/* Content section */}
-      <section ref={contentRef} className="py-16 md:py-24">
+      <section ref={contentRef} className="py-12 md:py-24 overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-20">
+          <div className="grid lg:grid-cols-[1fr_350px] gap-10 lg:gap-16">
             {/* Main content */}
             <div>
               {/* Description */}
@@ -336,7 +342,7 @@ const ProjectDetails = () => {
                   About the Project
                 </h2>
                 <p className="font-sans text-body-lg text-foreground leading-relaxed">
-                  {project.Description}
+                  {project.Description || project.Deskripsi || "This project showcases modern web development techniques and best practices."}
                 </p>
               </motion.div>
 

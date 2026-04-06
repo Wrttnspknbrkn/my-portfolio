@@ -234,18 +234,18 @@ const AboutPage = () => {
               </motion.div>
             </div>
 
-            {/* Experience badge */}
+            {/* Experience badge - smaller on mobile */}
             <motion.div
-              className="absolute -bottom-8 -right-8 lg:right-auto lg:-left-8 bg-background px-8 py-6 border border-accent/30"
+              className="absolute -bottom-4 sm:-bottom-8 right-4 sm:-right-8 lg:right-auto lg:-left-8 bg-background px-4 sm:px-8 py-3 sm:py-6 border border-accent/30"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
-              <span className="font-serif text-display text-accent">
+              <span className="font-serif text-heading sm:text-display text-accent">
                 {yearsExperience}+
               </span>
-              <span className="block font-sans text-caption text-foreground-muted uppercase tracking-wider mt-2">
+              <span className="block font-sans text-micro sm:text-caption text-foreground-muted uppercase tracking-wider mt-1 sm:mt-2">
                 Years of<br />Excellence
               </span>
             </motion.div>

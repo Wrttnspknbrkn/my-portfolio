@@ -2,51 +2,43 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PropTypes from "prop-types";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-  serverTimestamp,
+  addDoc, collection, onSnapshot, query, orderBy, serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase-comment";
 import { UserCircle2, Loader2, AlertCircle, Send, ImagePlus, X } from "lucide-react";
 
-// Comment component
 const Comment = memo(({ comment, formatDate }) => {
   const { profileImage, userName, createdAt, content } = comment;
 
   return (
     <motion.div
-      className="p-4 border-b border-border last:border-b-0 hover:bg-accent/5 transition-colors duration-300"
+      className="p-4 border-b border-border last:border-b-0 hover:bg-accent/5 transition-colors duration-300 w-full min-w-0"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 w-full min-w-0">
         {profileImage ? (
           <img
             src={profileImage}
             alt={`${userName}'s profile`}
-            className="w-10 h-10 rounded-full object-cover border border-border"
+            className="w-10 h-10 rounded-full object-cover border border-border flex-shrink-0"
             loading="lazy"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
             <UserCircle2 className="w-5 h-5 text-accent" strokeWidth={1.5} />
           </div>
         )}
-        <div className="flex-grow min-w-0">
-          <div className="flex items-center justify-between gap-4 mb-1">
-            <h4 className="font-sans text-body-sm text-foreground font-medium truncate">
-              {userName}
-            </h4>
-            <span className="font-sans text-caption text-foreground-muted whitespace-nowrap">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-1 w-full">
+            <h4 className="font-sans text-body-sm text-foreground font-medium truncate">{userName}</h4>
+            <span className="font-sans text-caption text-foreground-muted whitespace-nowrap flex-shrink-0">
               {formatDate(createdAt)}
             </span>
           </div>
-          <p className="font-sans text-body-sm text-foreground-muted leading-relaxed">
+          <p className="font-sans text-body-sm text-foreground-muted leading-relaxed break-words">
             {content}
           </p>
         </div>
@@ -67,7 +59,6 @@ Comment.propTypes = {
   formatDate: PropTypes.func.isRequired,
 };
 
-// Comment form component
 const CommentForm = memo(({ onSubmit, isSubmitting }) => {
   const [newComment, setNewComment] = useState("");
   const [userName, setUserName] = useState("");
@@ -99,7 +90,6 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
     (e) => {
       e.preventDefault();
       if (!newComment.trim() || !userName.trim()) return;
-
       onSubmit({ newComment, userName, imageFile });
       setNewComment("");
       setImagePreview(null);
@@ -117,9 +107,8 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Name input */}
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      <div className="w-full">
         <input
           type="text"
           value={userName}
@@ -131,8 +120,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
         />
       </div>
 
-      {/* Message input */}
-      <div>
+      <div className="w-full">
         <textarea
           ref={textareaRef}
           value={newComment}
@@ -144,14 +132,13 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
         />
       </div>
 
-      {/* Image upload */}
       <div className="flex items-center gap-4">
         {imagePreview ? (
           <div className="flex items-center gap-3">
             <img
               src={imagePreview}
               alt="Profile preview"
-              className="w-10 h-10 rounded-full object-cover border border-accent"
+              className="w-10 h-10 rounded-full object-cover border border-accent flex-shrink-0"
             />
             <button
               type="button"
@@ -185,7 +172,6 @@ const CommentForm = memo(({ onSubmit, isSubmitting }) => {
         )}
       </div>
 
-      {/* Submit button */}
       <motion.button
         type="submit"
         disabled={isSubmitting}
@@ -216,7 +202,6 @@ CommentForm.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
 };
 
-// Main comment section
 const Komentar = () => {
   const [comments, setComments] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -225,22 +210,15 @@ const Komentar = () => {
   useEffect(() => {
     const commentsRef = collection(db, "portfolio-comments");
     const q = query(commentsRef, orderBy("createdAt", "desc"));
-
     return onSnapshot(q, (querySnapshot) => {
-      const commentsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const commentsData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setComments(commentsData);
     });
   }, []);
 
   const uploadImage = useCallback(async (imageFile) => {
     if (!imageFile) return null;
-    const storageRef = ref(
-      storage,
-      `profile-images/${Date.now()}_${imageFile.name}`
-    );
+    const storageRef = ref(storage, `profile-images/${Date.now()}_${imageFile.name}`);
     await uploadBytes(storageRef, imageFile);
     return getDownloadURL(storageRef);
   }, []);
@@ -249,7 +227,6 @@ const Komentar = () => {
     async ({ newComment, userName, imageFile }) => {
       setError("");
       setIsSubmitting(true);
-
       try {
         const profileImageUrl = await uploadImage(imageFile);
         await addDoc(collection(db, "portfolio-comments"), {
@@ -281,20 +258,15 @@ const Komentar = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
 
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(date);
+    return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" }).format(date);
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Error message */}
+    <div className="space-y-6 w-full min-w-0">
       <AnimatePresence>
         {error && (
           <motion.div
-            className="flex items-center gap-2 p-4 border border-red-500/20 bg-red-500/5"
+            className="flex items-center gap-2 p-4 border border-red-500/20 bg-red-500/5 w-full"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -305,14 +277,11 @@ const Komentar = () => {
         )}
       </AnimatePresence>
 
-      {/* Comment form */}
       <CommentForm onSubmit={handleCommentSubmit} isSubmitting={isSubmitting} />
 
-      {/* Divider */}
       <div className="border-t border-border" />
 
-      {/* Comments list */}
-      <div className="max-h-[400px] overflow-y-auto">
+      <div className="max-h-[400px] overflow-y-auto overflow-x-hidden w-full">
         {comments.length === 0 ? (
           <div className="text-center py-8">
             <UserCircle2 className="w-10 h-10 text-foreground-muted/50 mx-auto mb-3" />
@@ -321,19 +290,14 @@ const Komentar = () => {
             </p>
           </div>
         ) : (
-          <div>
+          <div className="w-full">
             {comments.map((comment) => (
-              <Comment
-                key={comment.id}
-                comment={comment}
-                formatDate={formatDate}
-              />
+              <Comment key={comment.id} comment={comment} formatDate={formatDate} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Comment count */}
       {comments.length > 0 && (
         <p className="font-sans text-caption text-foreground-muted text-center">
           {comments.length} {comments.length === 1 ? "comment" : "comments"}

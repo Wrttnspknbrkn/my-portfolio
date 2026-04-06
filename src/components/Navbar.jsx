@@ -16,6 +16,8 @@ const Navbar = () => {
 
   const { scrollY } = useScroll();
 
+  const currentYear = new Date().getFullYear();
+
   const navItems = [
     { href: "#Home", label: "Home" },
     { href: "#About", label: "About" },
@@ -23,7 +25,6 @@ const Navbar = () => {
     { href: "#Contact", label: "Contact" },
   ];
 
-  // Smart hide/show on scroll
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = lastScrollY.current;
     if (latest > previous && latest > 150) {
@@ -35,7 +36,6 @@ const Navbar = () => {
     lastScrollY.current = latest;
   });
 
-  // GSAP logo animation
   useEffect(() => {
     if (logoRef.current) {
       gsap.fromTo(
@@ -92,20 +92,16 @@ const Navbar = () => {
 
   const scrollToSection = (e, href) => {
     e.preventDefault();
-    
-    // If we're on a project page, navigate home first
+
     if (location.pathname !== "/") {
       window.location.href = "/" + href;
       return;
     }
-    
+
     const section = document.querySelector(href);
     if (section) {
       const top = section.offsetTop - 100;
-      window.scrollTo({
-        top: top,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top, behavior: "smooth" });
     }
     setIsOpen(false);
   };
@@ -113,17 +109,11 @@ const Navbar = () => {
   const menuVariants = {
     closed: {
       opacity: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1],
-      },
+      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
     },
     open: {
       opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: [0.4, 0, 0.2, 1],
-      },
+      transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
     },
   };
 
@@ -156,18 +146,16 @@ const Navbar = () => {
     <>
       <motion.nav
         ref={navRef}
-        className={`fixed w-full top-0 z-50 transition-all duration-500 ${
-          scrolled
+        className={`fixed w-full top-0 z-50 transition-all duration-500 ${scrolled
             ? "bg-background/95 backdrop-blur-lg border-b border-border"
             : "bg-transparent"
-        }`}
+          }`}
         initial={{ y: -100 }}
         animate={{ y: hidden ? -100 : 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 md:h-24">
-            {/* Logo - Full Name */}
             <motion.div ref={logoRef}>
               {location.pathname === "/" ? (
                 <a
@@ -200,7 +188,6 @@ const Navbar = () => {
               )}
             </motion.div>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1">
               {navItems.map((item, index) => (
                 <motion.a
@@ -214,7 +201,6 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.3 }}
                 >
-                  {/* Hover background */}
                   <AnimatePresence>
                     {hoveredItem === item.label && (
                       <motion.span
@@ -229,16 +215,14 @@ const Navbar = () => {
                   </AnimatePresence>
 
                   <span
-                    className={`relative z-10 font-sans text-body-sm tracking-wide transition-colors duration-300 ${
-                      activeSection === item.href.substring(1)
+                    className={`relative z-10 font-sans text-body-sm tracking-wide transition-colors duration-300 ${activeSection === item.href.substring(1)
                         ? "text-accent"
                         : "text-foreground-muted group-hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </span>
 
-                  {/* Active indicator */}
                   {activeSection === item.href.substring(1) && (
                     <motion.span
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-accent rounded-full"
@@ -250,7 +234,6 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Status indicator & CV Link */}
             <div className="hidden md:flex items-center gap-6">
               <Link
                 to="/cv"
@@ -269,7 +252,6 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden relative w-12 h-12 flex items-center justify-center -mr-2"
@@ -279,26 +261,17 @@ const Navbar = () => {
               <div className="relative w-6 h-5 flex flex-col justify-between">
                 <motion.span
                   className="w-full h-[1.5px] bg-foreground origin-center"
-                  animate={{
-                    rotate: isOpen ? 45 : 0,
-                    y: isOpen ? 9.5 : 0,
-                  }}
+                  animate={{ rotate: isOpen ? 45 : 0, y: isOpen ? 9.5 : 0 }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                 />
                 <motion.span
                   className="w-full h-[1.5px] bg-foreground"
-                  animate={{
-                    opacity: isOpen ? 0 : 1,
-                    x: isOpen ? -20 : 0,
-                  }}
+                  animate={{ opacity: isOpen ? 0 : 1, x: isOpen ? -20 : 0 }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                 />
                 <motion.span
                   className="w-full h-[1.5px] bg-foreground origin-center"
-                  animate={{
-                    rotate: isOpen ? -45 : 0,
-                    y: isOpen ? -9.5 : 0,
-                  }}
+                  animate={{ rotate: isOpen ? -45 : 0, y: isOpen ? -9.5 : 0 }}
                   transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                 />
               </div>
@@ -307,7 +280,6 @@ const Navbar = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -317,15 +289,12 @@ const Navbar = () => {
             exit="closed"
             variants={menuVariants}
           >
-            {/* Backdrop */}
             <motion.div
               className="absolute inset-0 bg-background/98 backdrop-blur-xl"
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menu Content */}
             <div className="relative h-full flex flex-col justify-center px-8">
-              {/* Navigation links */}
               <nav className="space-y-1">
                 {navItems.map((item, index) => (
                   <div key={item.label} className="overflow-hidden">
@@ -338,11 +307,10 @@ const Navbar = () => {
                     >
                       <div className="flex items-center justify-between">
                         <span
-                          className={`font-serif text-display-sm ${
-                            activeSection === item.href.substring(1)
+                          className={`font-serif text-display-sm ${activeSection === item.href.substring(1)
                               ? "text-accent"
                               : "text-foreground"
-                          }`}
+                            }`}
                         >
                           {item.label}
                         </span>
@@ -358,8 +326,7 @@ const Navbar = () => {
                     />
                   </div>
                 ))}
-                
-                {/* CV Link in mobile menu */}
+
                 <div className="overflow-hidden pt-4">
                   <motion.div custom={navItems.length} variants={itemVariants}>
                     <Link
@@ -380,7 +347,6 @@ const Navbar = () => {
                 </div>
               </nav>
 
-              {/* Mobile status & socials */}
               <motion.div
                 className="absolute bottom-16 left-8 right-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -398,7 +364,7 @@ const Navbar = () => {
                     </span>
                   </div>
                   <span className="font-mono text-micro text-foreground-muted">
-                    2025
+                    {currentYear}
                   </span>
                 </div>
               </motion.div>

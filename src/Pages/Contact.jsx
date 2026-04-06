@@ -37,17 +37,17 @@ const InputField = memo(({ label, type = "text", name, value, onChange, disabled
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value && value.length > 0;
 
-  const inputClasses = `w-full bg-transparent border-b border-border focus:border-accent outline-none py-4 font-sans text-body text-foreground transition-colors duration-300 resize-none ${
+  const inputClasses = `w-full bg-transparent border-b border-border focus:border-accent outline-none py-3 sm:py-4 font-sans text-body-sm sm:text-body text-foreground transition-colors duration-300 resize-none ${
     disabled ? "opacity-50 cursor-not-allowed" : ""
   }`;
 
   return (
     <div className="relative">
       <motion.label
-        className={`absolute left-0 font-sans text-body transition-all duration-300 pointer-events-none ${
+        className={`absolute left-0 font-sans text-body-sm sm:text-body transition-all duration-300 pointer-events-none ${
           isFocused || hasValue
             ? "text-caption text-accent -top-2"
-            : "text-foreground-muted top-4"
+            : "text-foreground-muted top-3 sm:top-4"
         }`}
       >
         {label}
@@ -60,7 +60,7 @@ const InputField = memo(({ label, type = "text", name, value, onChange, disabled
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           disabled={disabled}
-          className={`${inputClasses} min-h-[120px]`}
+          className={`${inputClasses} min-h-[100px] sm:min-h-[120px]`}
           required
         />
       ) : (
@@ -80,27 +80,27 @@ const InputField = memo(({ label, type = "text", name, value, onChange, disabled
   );
 });
 
-// Social link card
+// Social link card - mobile optimized
 const SocialCard = memo(({ icon: Icon, label, href, username, index }) => (
   <motion.a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="group flex items-center justify-between p-4 sm:p-5 border border-border hover:border-accent transition-colors duration-300 overflow-hidden"
+    className="group flex items-center justify-between p-3 sm:p-4 border border-border hover:border-accent transition-colors duration-300"
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.5, delay: index * 0.1 }}
     whileHover={{ x: 4 }}
   >
-    <div className="flex items-center gap-3 min-w-0 flex-1">
-      <Icon className="w-5 h-5 flex-shrink-0 text-foreground-muted group-hover:text-accent transition-colors duration-300" strokeWidth={1.5} />
-      <div className="min-w-0">
+    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-foreground-muted group-hover:text-accent transition-colors duration-300" strokeWidth={1.5} />
+      <div className="min-w-0 flex-1">
         <p className="font-sans text-body-sm text-foreground">{label}</p>
-        <p className="font-sans text-caption text-foreground-muted truncate">{username}</p>
+        <p className="font-sans text-micro sm:text-caption text-foreground-muted truncate max-w-[120px] sm:max-w-none">{username}</p>
       </div>
     </div>
-    <ArrowUpRight className="w-4 h-4 flex-shrink-0 ml-2 text-foreground-muted group-hover:text-accent transition-colors duration-300" />
+    <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 ml-1 text-foreground-muted group-hover:text-accent transition-colors duration-300" />
   </motion.a>
 ));
 
@@ -188,29 +188,29 @@ const ContactPage = () => {
   };
 
   return (
-    <section className="relative py-section bg-background overflow-x-hidden" id="Contact">
+    <section className="relative py-16 sm:py-section bg-background" id="Contact">
       {/* Background decoration */}
       <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/[0.02]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
-        <div ref={headerRef} className="mb-16">
+        <div ref={headerRef} className="mb-10 sm:mb-16">
           <motion.div
-            className="flex items-center gap-4 mb-6"
+            className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <span className="font-mono text-caption uppercase tracking-[0.3em] text-accent">
+            <span className="font-mono text-micro sm:text-caption uppercase tracking-[0.2em] sm:tracking-[0.3em] text-accent">
               03
             </span>
-            <div className="w-12 h-px bg-accent" />
-            <span className="font-mono text-caption uppercase tracking-[0.3em] text-foreground-muted">
+            <div className="w-8 sm:w-12 h-px bg-accent" />
+            <span className="font-mono text-micro sm:text-caption uppercase tracking-[0.2em] sm:tracking-[0.3em] text-foreground-muted">
               Contact
             </span>
           </motion.div>
           <motion.h2
-            className="font-serif text-display text-foreground max-w-2xl"
+            className="font-serif text-heading sm:text-display text-foreground max-w-2xl"
             initial={{ opacity: 0, y: 30 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -218,7 +218,7 @@ const ContactPage = () => {
             {"Let's work"} <span className="text-accent">together</span>
           </motion.h2>
           <motion.p
-            className="font-sans text-body text-foreground-muted max-w-xl mt-4"
+            className="font-sans text-body-sm sm:text-body text-foreground-muted max-w-xl mt-3 sm:mt-4"
             initial={{ opacity: 0, y: 30 }}
             animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -228,7 +228,7 @@ const ContactPage = () => {
         </div>
 
         {/* Main content grid */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Contact form */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -236,7 +236,7 @@ const ContactPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               <InputField
                 label="Your Name"
                 name="name"
@@ -263,7 +263,7 @@ const ContactPage = () => {
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 whileHover={!isSubmitting ? { scale: 1.02 } : {}}
                 whileTap={!isSubmitting ? { scale: 0.98 } : {}}
               >
@@ -273,11 +273,11 @@ const ContactPage = () => {
             </form>
 
             {/* Social links */}
-            <div className="mt-16 pt-16 border-t border-border">
-              <h3 className="font-sans text-caption uppercase tracking-wider text-foreground-muted mb-6">
+            <div className="mt-10 sm:mt-16 pt-10 sm:pt-16 border-t border-border">
+              <h3 className="font-sans text-micro sm:text-caption uppercase tracking-wider text-foreground-muted mb-4 sm:mb-6">
                 Connect with me
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {socialLinks.map((social, index) => (
                   <SocialCard key={social.label} {...social} index={index} />
                 ))}
@@ -293,19 +293,19 @@ const ContactPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="sticky top-32">
-              <div className="border border-border p-4 sm:p-6 lg:p-8 overflow-hidden">
-                <h3 className="font-serif text-heading text-foreground mb-6">
+            <div className="lg:sticky lg:top-32">
+              <div className="border border-border p-4 sm:p-6 lg:p-8">
+                <h3 className="font-serif text-subheading sm:text-heading text-foreground mb-4 sm:mb-6">
                   Guest Book
                 </h3>
-                <p className="font-sans text-body-sm text-foreground-muted mb-8">
-                  Leave a message, share your thoughts, or just say hello. I appreciate every visitor.
+                <p className="font-sans text-body-sm text-foreground-muted mb-6 sm:mb-8">
+                  Leave a message, share your thoughts, or just say hello.
                 </p>
                 <Komentar />
               </div>
 
-              {/* Decorative element */}
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-r border-b border-accent/30 -z-10" />
+              {/* Decorative element - hidden on mobile */}
+              <div className="hidden sm:block absolute -bottom-4 -right-4 w-24 h-24 border-r border-b border-accent/30 -z-10" />
             </div>
           </motion.div>
         </div>

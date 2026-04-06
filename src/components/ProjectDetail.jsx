@@ -15,6 +15,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import Swal from "sweetalert2";
+import { usePortfolio } from "../context/PortfolioContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -26,13 +27,13 @@ const TechBadge = ({ tech, index }) => {
   return (
     <motion.span
       ref={ref}
-      className="inline-flex items-center px-4 py-2.5 bg-background-secondary border border-border rounded-lg font-sans text-body-sm text-foreground-muted hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-300 cursor-default"
+      className="inline-flex items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-background-secondary border border-border rounded-lg font-sans text-body-sm text-foreground-muted hover:border-accent hover:text-accent hover:bg-accent/5 transition-all duration-300 cursor-default"
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -3, scale: 1.02 }}
     >
-      <Code2 className="w-3.5 h-3.5 mr-2 opacity-60" strokeWidth={1.5} />
+      <Code2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-2 opacity-60" strokeWidth={1.5} />
       {tech}
     </motion.span>
   );
@@ -46,15 +47,15 @@ const FeatureItem = ({ feature, index }) => {
   return (
     <motion.li
       ref={ref}
-      className="group flex items-start gap-4 py-4 border-b border-border last:border-b-0 hover:bg-accent/5 -mx-4 px-4 transition-colors duration-300"
+      className="group flex items-start gap-3 sm:gap-4 py-3 sm:py-4 border-b border-border last:border-b-0 hover:bg-accent/5 -mx-2 sm:-mx-4 px-2 sm:px-4 transition-colors duration-300"
       initial={{ opacity: 0, x: -30 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08 }}
     >
-      <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent/10 text-accent font-mono text-caption">
+      <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-accent/10 text-accent font-mono text-micro sm:text-caption">
         {String(index + 1).padStart(2, "0")}
       </span>
-      <span className="font-sans text-body text-foreground-muted group-hover:text-foreground transition-colors pt-1">
+      <span className="font-sans text-body-sm sm:text-body text-foreground-muted group-hover:text-foreground transition-colors pt-0.5 sm:pt-1">
         {feature}
       </span>
     </motion.li>
@@ -74,21 +75,21 @@ const ProjectStats = ({ project }) => {
   ];
 
   return (
-    <div ref={ref} className="grid grid-cols-2 gap-4">
+    <div ref={ref} className="grid grid-cols-2 gap-3 sm:gap-4">
       {stats.map((stat, index) => (
         <motion.div
           key={stat.label}
-          className="group p-6 bg-background-secondary border border-border rounded-lg hover:border-accent/30 transition-all duration-300"
+          className="group p-4 sm:p-6 bg-background-secondary border border-border rounded-lg hover:border-accent/30 transition-all duration-300"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: index * 0.1 }}
           whileHover={{ y: -4 }}
         >
-          <stat.icon className="w-5 h-5 text-accent mb-3 opacity-70" strokeWidth={1.5} />
-          <span className="font-serif text-display-sm text-accent block mb-1">
+          <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-accent mb-2 sm:mb-3 opacity-70" strokeWidth={1.5} />
+          <span className="font-serif text-heading sm:text-display-sm text-accent block mb-1">
             {stat.value}
           </span>
-          <span className="font-sans text-caption text-foreground-muted uppercase tracking-wider">
+          <span className="font-sans text-micro sm:text-caption text-foreground-muted uppercase tracking-wider">
             {stat.label}
           </span>
         </motion.div>
@@ -119,6 +120,7 @@ const handleGithubClick = (githubLink) => {
 const ProjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { projects, loading } = usePortfolio();
   const [project, setProject] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [nextProject, setNextProject] = useState(null);
@@ -138,56 +140,67 @@ const ProjectDetails = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // Try localStorage first, then check if we can get from context
-    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    console.log("[v0] ProjectDetail - Loaded projects from localStorage:", storedProjects.length, "projects");
-    console.log("[v0] ProjectDetail - Looking for project with id:", id);
-    
-    if (storedProjects.length === 0) {
-      // If localStorage is empty, wait a bit for Firebase data
-      const checkInterval = setInterval(() => {
-        const refreshedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-        if (refreshedProjects.length > 0) {
-          clearInterval(checkInterval);
-          loadProjectData(refreshedProjects);
-        }
-      }, 500);
+  }, [id]);
+
+  // Load project data from context or localStorage
+  useEffect(() => {
+    const loadProject = () => {
+      // First try from context (most reliable)
+      let projectList = projects;
       
-      // Clear interval after 5 seconds
-      setTimeout(() => clearInterval(checkInterval), 5000);
-    } else {
-      loadProjectData(storedProjects);
-    }
-    
-    function loadProjectData(projects) {
-      const selectedProject = projects.find((p) => String(p.id) === id || p.Title === decodeURIComponent(id));
-
-      console.log("[v0] ProjectDetail - Found project:", selectedProject);
-      if (selectedProject) {
-        // Handle different field names from Firebase (Description vs Deskripsi, etc.)
-        const enhancedProject = {
-          ...selectedProject,
-          Features: selectedProject.Features || selectedProject.Fitur || [],
-          TechStack: selectedProject.TechStack || selectedProject.Tech || [],
-          Github: selectedProject.Github || selectedProject.github || "https://github.com/Wrttnspknbrkn",
-          Year: selectedProject.Year || selectedProject.Tahun || new Date().getFullYear().toString(),
-          Description: selectedProject.Description || selectedProject.Deskripsi || "A detailed project showcasing modern web development techniques and best practices.",
-          Link: selectedProject.Link || selectedProject.link || selectedProject.Demo || "",
-        };
-        console.log("[v0] ProjectDetail - Enhanced project:", enhancedProject);
-        setProject(enhancedProject);
-
-        // Find next project
-        const currentIndex = projects.findIndex((p) => String(p.id) === id || p.Title === decodeURIComponent(id));
-        if (currentIndex < projects.length - 1) {
-          setNextProject(projects[currentIndex + 1]);
-        } else if (projects.length > 1) {
-          setNextProject(projects[0]);
+      // Fallback to localStorage if context is empty
+      if (!projectList || projectList.length === 0) {
+        const stored = localStorage.getItem("projects");
+        if (stored) {
+          projectList = JSON.parse(stored);
         }
       }
-    }
-  }, [id]);
+
+      if (!projectList || projectList.length === 0) return;
+
+      // Find project by id or title (handle URL encoded titles)
+      const decodedId = decodeURIComponent(id);
+      const selectedProject = projectList.find(
+        (p) => String(p.id) === id || 
+               String(p.id) === decodedId || 
+               p.Title === id || 
+               p.Title === decodedId
+      );
+
+      if (selectedProject) {
+        // Normalize project data - handle different field names from Firebase
+        const normalizedProject = {
+          ...selectedProject,
+          Title: selectedProject.Title || selectedProject.title || "Untitled Project",
+          Description: selectedProject.Description || selectedProject.Deskripsi || selectedProject.description || "",
+          Img: selectedProject.Img || selectedProject.img || selectedProject.image || "",
+          Features: selectedProject.Features || selectedProject.Fitur || selectedProject.features || [],
+          TechStack: selectedProject.TechStack || selectedProject.Tech || selectedProject.techStack || [],
+          Github: selectedProject.Github || selectedProject.github || selectedProject.GitHub || "https://github.com/Wrttnspknbrkn",
+          Link: selectedProject.Link || selectedProject.link || selectedProject.Demo || selectedProject.demo || "",
+          Year: selectedProject.Year || selectedProject.Tahun || selectedProject.year || new Date().getFullYear().toString(),
+        };
+        
+        setProject(normalizedProject);
+
+        // Find next project
+        const currentIndex = projectList.findIndex(
+          (p) => String(p.id) === id || 
+                 String(p.id) === decodedId || 
+                 p.Title === id || 
+                 p.Title === decodedId
+        );
+        
+        if (currentIndex !== -1 && currentIndex < projectList.length - 1) {
+          setNextProject(projectList[currentIndex + 1]);
+        } else if (projectList.length > 1) {
+          setNextProject(projectList[0]);
+        }
+      }
+    };
+
+    loadProject();
+  }, [id, projects]);
 
   // GSAP animations
   useEffect(() => {
@@ -215,7 +228,8 @@ const ProjectDetails = () => {
     }
   }, [project, imageLoaded]);
 
-  if (!project) {
+  // Show loading state
+  if (loading && !project) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -232,10 +246,30 @@ const ProjectDetails = () => {
     );
   }
 
+  // Show not found if no project after loading
+  if (!loading && !project) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="font-serif text-display text-foreground mb-4">Project Not Found</h1>
+          <p className="font-sans text-body text-foreground-muted mb-8">
+            The project you are looking for does not exist or has been removed.
+          </p>
+          <Link to="/" className="btn-primary inline-flex">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) return null;
+
   return (
-    <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden">
+    <div ref={containerRef} className="min-h-screen bg-background">
       {/* Hero section with full image */}
-      <section className="relative h-[70vh] md:h-[85vh] overflow-hidden">
+      <section className="relative h-[60vh] sm:h-[70vh] md:h-[85vh] overflow-hidden">
         {/* Background image with parallax */}
         <motion.div
           ref={imageRef}
@@ -248,7 +282,7 @@ const ProjectDetails = () => {
           <img
             src={project.Img}
             alt={project.Title}
-            className={`w-full h-full object-contain sm:object-cover object-center transition-opacity duration-1000 ${
+            className={`w-full h-full object-cover object-center transition-opacity duration-1000 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}
@@ -260,13 +294,13 @@ const ProjectDetails = () => {
 
         {/* Back button */}
         <motion.div
-          className="absolute top-24 md:top-32 left-0 right-0 z-20"
+          className="absolute top-20 sm:top-24 md:top-32 left-0 right-0 z-20"
           style={{ opacity: headerOpacity }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.button
               onClick={() => navigate("/")}
-              className="group flex items-center gap-3 px-5 py-3 bg-background/80 backdrop-blur-md border border-border hover:border-accent text-foreground transition-all duration-300 rounded-lg"
+              className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 bg-background/80 backdrop-blur-md border border-border hover:border-accent text-foreground transition-all duration-300 rounded-lg"
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -280,10 +314,10 @@ const ProjectDetails = () => {
 
         {/* Title overlay at bottom */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 md:pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 md:pb-16">
             {/* Breadcrumb */}
             <motion.div
-              className="project-meta flex items-center gap-2 text-foreground-muted mb-4"
+              className="project-meta flex items-center gap-2 text-foreground-muted mb-3 sm:mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -292,22 +326,22 @@ const ProjectDetails = () => {
                 <span className="font-sans text-caption">Projects</span>
               </Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="font-sans text-caption text-accent">
+              <span className="font-sans text-caption text-accent truncate max-w-[200px] sm:max-w-none">
                 {project.Title}
               </span>
             </motion.div>
 
             {/* Title */}
-            <h1 className="project-title font-serif text-display md:text-display-lg text-foreground max-w-4xl">
+            <h1 className="project-title font-serif text-heading sm:text-display md:text-display-lg text-foreground max-w-4xl">
               {project.Title}
             </h1>
 
             {/* Meta info */}
-            <div className="project-meta flex flex-wrap items-center gap-4 mt-6">
+            <div className="project-meta flex flex-wrap items-center gap-2 sm:gap-4 mt-4 sm:mt-6">
               {project.Year && (
-                <span className="flex items-center gap-2 px-4 py-2 bg-background/60 backdrop-blur-sm border border-border rounded-full">
-                  <Calendar className="w-4 h-4 text-accent" strokeWidth={1.5} />
-                  <span className="font-mono text-caption text-foreground-muted">
+                <span className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-background/60 backdrop-blur-sm border border-border rounded-full">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-accent" strokeWidth={1.5} />
+                  <span className="font-mono text-micro sm:text-caption text-foreground-muted">
                     {project.Year}
                   </span>
                 </span>
@@ -315,7 +349,7 @@ const ProjectDetails = () => {
               {project.TechStack?.slice(0, 3).map((tech, i) => (
                 <span
                   key={i}
-                  className="px-4 py-2 bg-background/60 backdrop-blur-sm border border-border rounded-full font-mono text-caption text-foreground-muted"
+                  className="hidden sm:inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-background/60 backdrop-blur-sm border border-border rounded-full font-mono text-micro sm:text-caption text-foreground-muted"
                 >
                   {tech}
                 </span>
@@ -326,29 +360,29 @@ const ProjectDetails = () => {
       </section>
 
       {/* Content section */}
-      <section ref={contentRef} className="py-12 md:py-24 overflow-x-hidden">
+      <section ref={contentRef} className="py-10 sm:py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[1fr_350px] gap-10 lg:gap-16">
+          <div className="grid lg:grid-cols-[1fr_320px] gap-10 lg:gap-16">
             {/* Main content */}
             <div>
               {/* Description */}
               <motion.div
-                className="mb-16"
+                className="mb-10 sm:mb-16"
                 initial={{ opacity: 0, y: 40 }}
                 animate={isContentInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6 }}
               >
-                <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-6">
+                <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-4 sm:mb-6">
                   About the Project
                 </h2>
-                <p className="font-sans text-body-lg text-foreground leading-relaxed">
-                  {project.Description || project.Deskripsi || "This project showcases modern web development techniques and best practices."}
+                <p className="font-sans text-body sm:text-body-lg text-foreground leading-relaxed">
+                  {project.Description || "This project showcases modern web development techniques and best practices, built with a focus on user experience and performance."}
                 </p>
               </motion.div>
 
               {/* CTA Buttons */}
               <motion.div
-                className="flex flex-wrap gap-4 mb-16"
+                className="flex flex-wrap gap-3 sm:gap-4 mb-10 sm:mb-16"
                 initial={{ opacity: 0, y: 40 }}
                 animate={isContentInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: 0.1 }}
@@ -389,36 +423,32 @@ const ProjectDetails = () => {
               </motion.div>
 
               {/* Technologies */}
-              <motion.div
-                className="mb-16"
-                initial={{ opacity: 0, y: 40 }}
-                animate={isContentInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-6">
-                  Technologies Used
-                </h2>
-                {project.TechStack.length > 0 ? (
-                  <div className="flex flex-wrap gap-3">
+              {project.TechStack && project.TechStack.length > 0 && (
+                <motion.div
+                  className="mb-10 sm:mb-16"
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={isContentInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-4 sm:mb-6">
+                    Technologies Used
+                  </h2>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     {project.TechStack.map((tech, index) => (
                       <TechBadge key={index} tech={tech} index={index} />
                     ))}
                   </div>
-                ) : (
-                  <p className="font-sans text-body-sm text-foreground-muted">
-                    No technologies listed.
-                  </p>
-                )}
-              </motion.div>
+                </motion.div>
+              )}
 
               {/* Features */}
-              {project.Features.length > 0 && (
+              {project.Features && project.Features.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   animate={isContentInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.3 }}
                 >
-                  <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-6">
+                  <h2 className="font-sans text-caption uppercase tracking-wider text-accent mb-4 sm:mb-6">
                     Key Features
                   </h2>
                   <ul className="space-y-0">
@@ -431,7 +461,7 @@ const ProjectDetails = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:sticky lg:top-32 lg:self-start space-y-8">
+            <div className="lg:sticky lg:top-32 lg:self-start space-y-6 sm:space-y-8">
               {/* Stats */}
               <motion.div
                 initial={{ opacity: 0, x: 40 }}
@@ -467,23 +497,23 @@ const ProjectDetails = () => {
                   animate={isContentInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.4 }}
                 >
-                  <h3 className="font-sans text-caption uppercase tracking-wider text-foreground-muted mb-4">
+                  <h3 className="font-sans text-caption uppercase tracking-wider text-foreground-muted mb-3 sm:mb-4">
                     Next Project
                   </h3>
                   <Link
                     to={`/project/${nextProject.id}`}
-                    className="group block p-4 border border-border rounded-lg hover:border-accent/30 transition-all duration-300"
+                    className="group block p-3 sm:p-4 border border-border rounded-lg hover:border-accent/30 transition-all duration-300"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-serif text-subheading text-foreground group-hover:text-accent transition-colors">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-serif text-body sm:text-subheading text-foreground group-hover:text-accent transition-colors block truncate">
                           {nextProject.Title}
                         </span>
                         <p className="font-sans text-caption text-foreground-muted mt-1 line-clamp-1">
-                          {nextProject.Description}
+                          {nextProject.Description || nextProject.Deskripsi}
                         </p>
                       </div>
-                      <ArrowUpRight className="w-5 h-5 text-foreground-muted group-hover:text-accent transition-colors" />
+                      <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-foreground-muted group-hover:text-accent transition-colors" />
                     </div>
                   </Link>
                 </motion.div>

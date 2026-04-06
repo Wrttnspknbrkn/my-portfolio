@@ -1,16 +1,81 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
+
+// Interactive cursor follower component
+const CursorFollower = ({ mousePos, isHovering }) => {
+  return (
+    <motion.div
+      className="fixed pointer-events-none z-50 mix-blend-difference"
+      animate={{
+        x: mousePos.x - 20,
+        y: mousePos.y - 20,
+        scale: isHovering ? 1.5 : 1,
+      }}
+      transition={{ type: "spring", damping: 30, stiffness: 200 }}
+    >
+      <div className="w-10 h-10 rounded-full border border-accent/60 flex items-center justify-center">
+        <motion.div 
+          className="w-2 h-2 rounded-full bg-accent"
+          animate={{ scale: isHovering ? 0 : 1 }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
+// Floating interactive element
+const FloatingElement = ({ children, delay = 0, onClick, isActive }) => {
+  return (
+    <motion.div
+      className={`cursor-pointer select-none transition-colors duration-300 ${isActive ? 'text-accent' : 'text-foreground-muted/40 hover:text-foreground-muted'}`}
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+      }}
+      transition={{ delay, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+      onClick={onClick}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [currentWord, setCurrentWord] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [activeElements, setActiveElements] = useState([]);
+  const [showHint, setShowHint] = useState(true);
   const containerRef = useRef(null);
   const progressBarRef = useRef(null);
   const particlesRef = useRef(null);
 
   const words = ['Create', 'Design', 'Develop', 'Inspire'];
+  const interactiveElements = ['React', 'Next.js', 'TypeScript', 'Tailwind', 'Node.js', 'Firebase'];
+
+  // Track mouse position
+  const handleMouseMove = useCallback((e) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  // Handle element click
+  const handleElementClick = useCallback((index) => {
+    setActiveElements(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(i => i !== index);
+      }
+      return [...prev, index];
+    });
+    setClickCount(prev => prev + 1);
+    setShowHint(false);
+  }, []);
 
   // GSAP particle animations
   useEffect(() => {
@@ -32,29 +97,34 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
   }, []);
 
   useEffect(() => {
-    // Animate progress bar with GSAP for smoother effect
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    // Animate progress bar with GSAP
     gsap.to(progressBarRef.current, {
       width: '100%',
-      duration: 4.8,
+      duration: 4.5,
       ease: 'power2.inOut',
       onUpdate: function() {
-        const progress = Math.round(this.progress() * 100);
-        setProgress(progress);
+        const prog = Math.round(this.progress() * 100);
+        setProgress(prog);
       }
     });
 
-    // Cycle through words - slower pace for readability
+    // Cycle through words - readable pace
     const wordInterval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 1200);
+    }, 1000);
 
-    // Complete loading after animation - extended for better word display
+    // Complete loading after animation
     const timer = setTimeout(() => {
       setIsLoading(false);
       setTimeout(() => {
         onLoadingComplete?.();
       }, 800);
-    }, 5200);
+    }, 5000);
 
     return () => {
       clearTimeout(timer);
@@ -113,11 +183,15 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       {isLoading && (
         <motion.div
           ref={containerRef}
-          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center overflow-hidden cursor-none"
           initial={{ opacity: 1 }}
           exit="exit"
           variants={containerVariants}
+          onMouseEnter={() => setIsHovering(false)}
         >
+          {/* Custom cursor */}
+          <CursorFollower mousePos={mousePos} isHovering={isHovering} />
+
           {/* Animated particles */}
           <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
             {particles.map((p) => (
@@ -132,6 +206,39 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 }}
               />
             ))}
+          </div>
+
+          {/* Interactive floating tech stack elements */}
+          <div className="absolute inset-0 pointer-events-none">
+            {interactiveElements.map((tech, i) => {
+              const positions = [
+                { top: '15%', left: '10%' },
+                { top: '20%', right: '15%' },
+                { top: '45%', left: '5%' },
+                { top: '50%', right: '8%' },
+                { bottom: '25%', left: '12%' },
+                { bottom: '20%', right: '10%' },
+              ];
+              return (
+                <motion.div
+                  key={tech}
+                  className="absolute pointer-events-auto hidden sm:block"
+                  style={positions[i]}
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
+                >
+                  <FloatingElement
+                    delay={0.8 + i * 0.15}
+                    onClick={() => handleElementClick(i)}
+                    isActive={activeElements.includes(i)}
+                  >
+                    <span className="font-mono text-body-sm sm:text-body tracking-wide">
+                      {tech}
+                    </span>
+                  </FloatingElement>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Subtle background pattern */}
@@ -151,11 +258,14 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             animate={{
               scale: [1, 1.3, 1],
               opacity: [0.3, 0.5, 0.3],
+              x: mousePos.x * 0.02 - 20,
+              y: mousePos.y * 0.02 - 20,
             }}
             transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
+              scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+              x: { duration: 0.5 },
+              y: { duration: 0.5 },
             }}
           />
           <motion.div
@@ -163,23 +273,26 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             animate={{
               scale: [1.2, 1, 1.2],
               opacity: [0.4, 0.2, 0.4],
+              x: -mousePos.x * 0.015 + 15,
+              y: -mousePos.y * 0.015 + 15,
             }}
             transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: 'easeInOut',
+              scale: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
+              x: { duration: 0.5 },
+              y: { duration: 0.5 },
             }}
           />
 
           {/* Accent line decorations */}
           <motion.div
-            className="absolute top-0 left-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
+            className="absolute top-0 left-10 sm:left-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
             initial={{ opacity: 0, scaleY: 0 }}
             animate={{ opacity: 1, scaleY: 1 }}
             transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
           />
           <motion.div
-            className="absolute top-0 right-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
+            className="absolute top-0 right-10 sm:right-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
             initial={{ opacity: 0, scaleY: 0 }}
             animate={{ opacity: 1, scaleY: 1 }}
             transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
@@ -197,10 +310,10 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             }}
           />
 
-          <div className="relative z-10 text-center px-6">
+          <div className="relative z-10 text-center px-4 sm:px-6">
             {/* Small label */}
             <motion.p
-              className="font-mono text-caption uppercase tracking-[0.4em] text-accent mb-10"
+              className="font-mono text-micro sm:text-caption uppercase tracking-[0.3em] sm:tracking-[0.4em] text-accent mb-6 sm:mb-10"
               initial={{ opacity: 0, y: 20, letterSpacing: '0.1em' }}
               animate={{ opacity: 1, y: 0, letterSpacing: '0.4em' }}
               transition={{ delay: 0.2, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
@@ -209,8 +322,12 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             </motion.p>
 
             {/* Main name - letter by letter with 3D effect */}
-            <div className="overflow-visible mb-8 perspective-1000">
-              <h1 className="font-serif text-[clamp(2.5rem,10vw,7rem)] leading-[1.1] text-foreground flex flex-wrap justify-center gap-x-5">
+            <div 
+              className="overflow-visible mb-6 sm:mb-8 perspective-1000"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+            >
+              <h1 className="font-serif text-[clamp(2rem,9vw,7rem)] leading-[1.1] text-foreground flex flex-wrap justify-center gap-x-3 sm:gap-x-5">
                 {name.split(' ').map((word, wordIndex) => (
                   <span key={wordIndex} className="flex overflow-visible">
                     {word.split('').map((letter, letterIndex) => (
@@ -221,7 +338,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="inline-block"
+                        className="inline-block hover:text-accent transition-colors duration-200"
                         style={{ transformStyle: 'preserve-3d' }}
                       >
                         {letter}
@@ -232,12 +349,12 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
               </h1>
             </div>
 
-            {/* Animated word carousel with fade */}
-            <div className="h-10 overflow-hidden mb-14">
+            {/* Animated word carousel */}
+            <div className="h-8 sm:h-10 overflow-hidden mb-8 sm:mb-14">
               <AnimatePresence mode="wait">
                 <motion.p
                   key={currentWord}
-                  className="font-sans text-body-lg text-accent tracking-widest uppercase"
+                  className="font-sans text-body sm:text-body-lg text-accent tracking-widest uppercase"
                   initial={{ y: 30, opacity: 0, filter: 'blur(6px)' }}
                   animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
                   exit={{ y: -30, opacity: 0, filter: 'blur(6px)' }}
@@ -248,8 +365,39 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
               </AnimatePresence>
             </div>
 
+            {/* Interactive hint - desktop only */}
+            <AnimatePresence>
+              {showHint && (
+                <motion.p
+                  className="hidden sm:block font-mono text-micro text-foreground-muted/50 mb-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 1.5, duration: 0.5 }}
+                >
+                  Click the floating tech stack to interact
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* Click counter feedback */}
+            <AnimatePresence>
+              {clickCount > 0 && (
+                <motion.div
+                  className="hidden sm:block absolute top-4 right-4 sm:top-8 sm:right-8"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <span className="font-mono text-micro text-accent">
+                    {clickCount} / {interactiveElements.length} discovered
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Progress indicator */}
-            <div className="relative w-56 mx-auto">
+            <div className="relative w-48 sm:w-56 mx-auto">
               {/* Progress bar background */}
               <div className="h-px bg-foreground-muted/10 w-full rounded-full overflow-hidden">
                 {/* Progress bar fill */}
@@ -260,14 +408,14 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 />
               </div>
 
-              {/* Progress number with glow */}
+              {/* Progress number */}
               <motion.div
-                className="mt-6 flex items-center justify-center gap-2"
+                className="mt-4 sm:mt-6 flex items-center justify-center gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <span className="font-mono text-caption text-foreground-muted tabular-nums">
+                <span className="font-mono text-micro sm:text-caption text-foreground-muted tabular-nums">
                   {progress}%
                 </span>
                 <motion.span
@@ -279,9 +427,9 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             </div>
           </div>
 
-          {/* Corner decorations with animation */}
+          {/* Corner decorations */}
           <motion.div
-            className="absolute top-8 left-8 w-16 h-16"
+            className="absolute top-4 left-4 sm:top-8 sm:left-8 w-12 sm:w-16 h-12 sm:h-16"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -290,7 +438,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-accent/50 to-transparent" />
           </motion.div>
           <motion.div
-            className="absolute top-8 right-8 w-16 h-16"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 w-12 sm:w-16 h-12 sm:h-16"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.7, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -299,7 +447,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-accent/50 to-transparent" />
           </motion.div>
           <motion.div
-            className="absolute bottom-8 left-8 w-16 h-16"
+            className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-12 sm:w-16 h-12 sm:h-16"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
@@ -308,7 +456,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             <div className="absolute bottom-0 left-0 h-full w-px bg-gradient-to-t from-accent/50 to-transparent" />
           </motion.div>
           <motion.div
-            className="absolute bottom-8 right-8 w-16 h-16"
+            className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-12 sm:w-16 h-12 sm:h-16"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.9, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}

@@ -31,9 +31,9 @@ gsap.registerPlugin(ScrollTrigger);
 // Timeline data based on CV
 const experiences = [
   {
-    title: "Freelance Software Developer",
+    title: "Software Development Lead",
     company: "GydGen",
-    location: "Accra, Ghana",
+    location: "Hamburg, Germany",
     period: "2021 - Present",
     type: "current",
     achievements: [
@@ -89,8 +89,8 @@ const experiences = [
 
 const skills = {
   technical: [
-    "React.js", "Node.js", "Tailwind CSS", "PHP", "Python",
-    "SQL", "HTML", "CSS", "JavaScript", "Firebase", "Git",
+    "React.js", "Next.js", "Node.js", "Tailwind CSS", "PHP", "Python",
+    "SQL", "HTML", "CSS", "JavaScript", "Firebase", "Supabase", "Git",
   ],
   soft: [
     "Data Analysis & Reporting",
@@ -102,7 +102,7 @@ const skills = {
     "Strategic Planning",
     "Computer Networking",
   ],
-  languages: ["English", "Akan (Twi)"],
+  languages: ["English", "Akan (Twi)", "German (Basic)"],
 };
 
 // Animated section header
@@ -386,13 +386,13 @@ const CV = () => {
 
           {/* Contact info */}
           <div className="hero-text flex flex-wrap items-center justify-center gap-4 md:gap-6 mb-12">
-            <a
-              href="tel:+233548511391"
-              className="flex items-center gap-2 text-foreground-muted hover:text-accent transition-colors"
-            >
-              <Phone className="w-4 h-4" strokeWidth={1.5} />
-              <span className="font-sans text-body-sm">(+233) 548511391</span>
-            </a>
+<a
+                              href="tel:+4915212990668"
+                              className="flex items-center gap-2 text-foreground-muted hover:text-accent transition-colors"
+                            >
+                              <Phone className="w-4 h-4" strokeWidth={1.5} />
+                              <span className="font-sans text-body-sm">+49 15212990668</span>
+                            </a>
             <a
               href="mailto:wycekhid10@gmail.com"
               className="flex items-center gap-2 text-foreground-muted hover:text-accent transition-colors"

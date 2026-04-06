@@ -255,7 +255,7 @@ const Home = () => {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background pt-24 md:pt-28"
       id="Home"
     >
       {/* Background elements */}
@@ -299,14 +299,14 @@ const Home = () => {
           </motion.div>
 
           {/* Main heading with character animation */}
-          <div className="mb-8 overflow-hidden">
-            <h1 className="font-serif text-[clamp(3rem,12vw,10rem)] leading-[0.9] tracking-tight text-foreground">
-              <div className="overflow-hidden">
+          <div className="mb-8 overflow-visible pb-4">
+            <h1 className="font-serif text-[clamp(2.5rem,10vw,8rem)] leading-[1.1] tracking-tight text-foreground">
+              <div className="overflow-visible">
                 {firstName.split("").map((char, i) => (
                   <AnimatedChar key={i} char={char} index={i} totalChars={firstName.length} />
                 ))}
               </div>
-              <div className="overflow-hidden">
+              <div className="overflow-visible">
                 {lastName.split("").map((char, i) => (
                   <AnimatedChar 
                     key={i} 
@@ -416,15 +416,15 @@ const Home = () => {
         </div>
       </motion.div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator - centered */}
       <motion.button
         onClick={scrollToNext}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-foreground-muted hover:text-accent transition-colors cursor-pointer"
+        className="absolute bottom-8 md:bottom-12 left-0 right-0 mx-auto w-max flex flex-col items-center gap-3 text-foreground-muted hover:text-accent transition-colors cursor-pointer"
         initial={{ opacity: 0, y: 20 }}
         animate={isLoaded ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 1.8 }}
       >
-        <span className="font-mono text-caption uppercase tracking-[0.3em]">
+        <span className="font-mono text-caption uppercase tracking-[0.2em]">
           Scroll to explore
         </span>
         <motion.div
@@ -447,7 +447,7 @@ const Home = () => {
       >
         <div className="w-px h-20 bg-gradient-to-b from-transparent via-accent to-transparent" />
         <span className="font-mono text-caption text-foreground-muted/50 tracking-wider" style={{ writingMode: 'vertical-rl' }}>
-          PORTFOLIO 2024
+          CRAFTING DIGITAL
         </span>
         <div className="w-px h-20 bg-gradient-to-b from-accent via-accent to-transparent" />
       </motion.div>
@@ -460,7 +460,7 @@ const Home = () => {
       >
         <div className="w-px h-20 bg-gradient-to-b from-transparent via-accent to-transparent" />
         <span className="font-mono text-caption text-foreground-muted/50 tracking-wider" style={{ writingMode: 'vertical-rl' }}>
-          BASED IN GHANA
+          HAMBURG, GERMANY
         </span>
         <div className="w-px h-20 bg-gradient-to-b from-accent via-accent to-transparent" />
       </motion.div>

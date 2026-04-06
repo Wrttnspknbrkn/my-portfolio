@@ -174,8 +174,8 @@ const AboutPage = () => {
   );
 
   const skills = [
-    "React", "JavaScript", "TypeScript", "Node.js", 
-    "PHP", "Python", "Tailwind CSS", "Firebase",
+    "React", "Next.js", "JavaScript", "TypeScript", "Node.js", 
+    "PHP", "Python", "Tailwind CSS", "Firebase", "Supabase",
     "MySQL", "MongoDB", "REST APIs", "Git"
   ];
 
@@ -211,13 +211,13 @@ const AboutPage = () => {
         </div>
 
         {/* Main content grid */}
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start overflow-visible">
           {/* Left column - Image */}
           <motion.div 
-            className="relative lg:sticky lg:top-32"
+            className="relative lg:sticky lg:top-32 overflow-visible"
             style={{ y: imageY, rotate: imageRotate }}
           >
-            <div className="relative aspect-[4/5] overflow-hidden">
+            <div className="relative aspect-[4/5] overflow-visible">
               <RevealImage src="/profile.jpeg" alt="Kelvin Fameyeh" />
 
               {/* Decorative frame */}
@@ -226,11 +226,11 @@ const AboutPage = () => {
               
               {/* Floating tech icons */}
               <motion.div
-                className="absolute -right-6 top-1/4 w-12 h-12 bg-background border border-accent/50 flex items-center justify-center"
+                className="absolute right-2 sm:right-4 top-1/4 w-10 h-10 sm:w-12 sm:h-12 bg-background border border-accent/50 flex items-center justify-center z-20"
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Cpu className="w-5 h-5 text-accent" />
+                <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
               </motion.div>
             </div>
 

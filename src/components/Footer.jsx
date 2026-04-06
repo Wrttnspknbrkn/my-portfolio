@@ -211,7 +211,7 @@ const Footer = () => {
                   <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </a>
                 <p className="font-sans text-body-sm text-foreground-muted">
-                  Accra, Ghana
+                  Hamburg, Germany
                 </p>
                 
                 {/* CTA */}
@@ -240,21 +240,10 @@ const Footer = () => {
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <span className="text-accent">&copy;</span> {currentYear} <span className="text-foreground">Kelvin Ajar Fameyeh</span>. All rights reserved.
+              <span className="text-accent">&copy;</span> {currentYear} <span className="text-foreground">Kelvin Fameyeh</span>. All rights reserved.
             </motion.p>
 
-            {/* Tech stack badge */}
-            <motion.div
-              className="flex items-center gap-2 px-3 py-1.5 bg-background/50 border border-border rounded-full"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              <span className="font-mono text-micro text-foreground-muted">
-                Built with React + Tailwind
-              </span>
-            </motion.div>
+            
 
             {/* Scroll to top */}
             <motion.button

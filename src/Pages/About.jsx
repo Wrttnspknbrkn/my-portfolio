@@ -193,7 +193,7 @@ const AboutPage = () => {
             className="relative lg:sticky lg:top-32"
             style={{ y: imageY, rotate: imageRotate }}
           >
-            <div className="relative aspect-[4/5] pb-16">
+            <div className="relative aspect-[4/5]">
               <RevealImage src="/profile.jpeg" alt="Kelvin Fameyeh" />
 
               <div className="absolute -top-4 -left-4 w-32 h-32 border-l-2 border-t-2 border-accent/40 pointer-events-none" />
@@ -208,7 +208,7 @@ const AboutPage = () => {
               </motion.div>
 
               <motion.div
-                className="absolute -bottom-16 left-6 w-36 h-36 bg-background flex flex-col items-center justify-center border border-accent/30 shadow-xl z-20"
+                className="absolute bottom-4 left-4 w-36 h-36 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center border border-accent/30 shadow-xl z-20"
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}

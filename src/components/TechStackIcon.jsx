@@ -1,21 +1,58 @@
-import React from 'react';
+import React, { useState, memo } from "react";
+import { motion } from "framer-motion";
 
-const TechStackIcon = ({ TechStackIcon, Language }) => {
+const TechStackIcon = memo(({ TechStackIcon, Language }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
-    <div className="group p-6 rounded-2xl bg-slate-800/50 hover:bg-slate-700/50 transition-all duration-300 ease-in-out flex flex-col items-center justify-center gap-3 hover:scale-105 cursor-pointer shadow-lg hover:shadow-xl">
-      <div className="relative">
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-0 group-hover:opacity-50 blur transition duration-300"></div>
-        <img 
-          src={TechStackIcon} 
-          alt={`${Language} icon`} 
-          className="relative h-16 w-16 md:h-20 md:w-20 transform transition-transform duration-300"
+    <motion.div
+      className="group relative flex flex-col items-center justify-center p-6 border border-border hover:border-accent/50 transition-colors duration-300 cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {/* Background accent */}
+      <motion.div
+        className="absolute inset-0 bg-accent/5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+      />
+
+      {/* Icon container */}
+      <div className="relative mb-3">
+        {!imageLoaded && (
+          <div className="w-12 h-12 skeleton rounded" />
+        )}
+        <motion.img
+          src={TechStackIcon}
+          alt={`${Language} icon`}
+          className={`w-12 h-12 object-contain transition-opacity duration-300 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
+          onLoad={() => setImageLoaded(true)}
+          animate={{ scale: isHovered ? 1.1 : 1 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         />
       </div>
-      <span className="text-slate-300 font-semibold text-sm md:text-base tracking-wide group-hover:text-white transition-colors duration-300">
+
+      {/* Language name */}
+      <span className="font-sans text-caption text-foreground-muted group-hover:text-foreground transition-colors duration-300 text-center">
         {Language}
       </span>
-    </div>
-  );
-};
 
-export default TechStackIcon; 
+      {/* Hover line */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-px bg-accent"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        style={{ transformOrigin: "left" }}
+      />
+    </motion.div>
+  );
+});
+
+export default TechStackIcon;

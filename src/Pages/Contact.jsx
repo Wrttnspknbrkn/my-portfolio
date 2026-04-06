@@ -1,10 +1,108 @@
-import { useState, useEffect } from "react";
-import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
-import SocialLinks from "../components/SocialLinks";
-import Komentar from "../components/Commentar";
+import { useState, useRef, memo } from "react";
+import { motion, useInView } from "framer-motion";
+import { Send, ArrowUpRight, Github, Linkedin, Instagram, Mail } from "lucide-react";
 import Swal from "sweetalert2";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import Komentar from "../components/Commentar";
+
+// Social link data
+const socialLinks = [
+  {
+    icon: Github,
+    label: "GitHub",
+    href: "https://github.com/Wrttnspknbrkn",
+    username: "@Wrttnspknbrkn",
+  },
+  {
+    icon: Linkedin,
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/kelvin-fameyeh-9479941a9/",
+    username: "Kelvin Fameyeh",
+  },
+  {
+    icon: Instagram,
+    label: "Instagram",
+    href: "https://www.instagram.com/kelvin.exe__",
+    username: "@kelvin.exe__",
+  },
+  {
+    icon: Mail,
+    label: "Email",
+    href: "mailto:wycekhid10@gmail.com",
+    username: "wycekhid10@gmail.com",
+  },
+];
+
+// Input field component
+const InputField = memo(({ label, type = "text", name, value, onChange, disabled, isTextarea = false }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const hasValue = value && value.length > 0;
+
+  const inputClasses = `w-full bg-transparent border-b border-border focus:border-accent outline-none py-4 font-sans text-body text-foreground transition-colors duration-300 resize-none ${
+    disabled ? "opacity-50 cursor-not-allowed" : ""
+  }`;
+
+  return (
+    <div className="relative">
+      <motion.label
+        className={`absolute left-0 font-sans text-body transition-all duration-300 pointer-events-none ${
+          isFocused || hasValue
+            ? "text-caption text-accent -top-2"
+            : "text-foreground-muted top-4"
+        }`}
+      >
+        {label}
+      </motion.label>
+      {isTextarea ? (
+        <textarea
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          disabled={disabled}
+          className={`${inputClasses} min-h-[120px]`}
+          required
+        />
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          disabled={disabled}
+          className={inputClasses}
+          required
+        />
+      )}
+    </div>
+  );
+});
+
+// Social link card
+const SocialCard = memo(({ icon: Icon, label, href, username, index }) => (
+  <motion.a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group flex items-center justify-between p-6 border border-border hover:border-accent transition-colors duration-300"
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
+    whileHover={{ x: 4 }}
+  >
+    <div className="flex items-center gap-4">
+      <Icon className="w-5 h-5 text-foreground-muted group-hover:text-accent transition-colors duration-300" strokeWidth={1.5} />
+      <div>
+        <p className="font-sans text-body-sm text-foreground">{label}</p>
+        <p className="font-sans text-caption text-foreground-muted">{username}</p>
+      </div>
+    </div>
+    <ArrowUpRight className="w-4 h-4 text-foreground-muted group-hover:text-accent transition-colors duration-300" />
+  </motion.a>
+));
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -13,12 +111,8 @@ const ContactPage = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    AOS.init({
-      once: false,
-    });
-  }, []);
+  const headerRef = useRef(null);
+  const isHeaderInView = useInView(headerRef, { once: true, margin: "-100px" });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,37 +127,44 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     Swal.fire({
-      title: 'Sending Message...',
-      html: 'Please wait while we send your message',
+      title: "Sending Message...",
+      html: "Please wait while we send your message",
       allowOutsideClick: false,
+      background: "#0D0D0D",
+      color: "#FAFAF9",
       didOpen: () => {
         Swal.showLoading();
-      }
+      },
     });
 
     try {
-      const response = await fetch('https://formsubmit.co/ajax/wycekhid10@gmail.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await fetch(
+        "https://formsubmit.co/ajax/wycekhid10@gmail.com",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
 
       await response.json();
 
       Swal.fire({
-        title: 'Success!',
-        text: 'Your message has been sent successfully!',
-        icon: 'success',
-        confirmButtonColor: '#6366f1',
-        timer: 2000,
-        timerProgressBar: true
+        title: "Message Sent",
+        text: "Thank you for reaching out. I will get back to you soon.",
+        icon: "success",
+        confirmButtonColor: "#C9A87C",
+        timer: 3000,
+        timerProgressBar: true,
+        background: "#0D0D0D",
+        color: "#FAFAF9",
       });
 
       setFormData({
@@ -72,12 +173,14 @@ const ContactPage = () => {
         message: "",
       });
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error("Submission error:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Something went wrong. Please try again later.',
-        icon: 'error',
-        confirmButtonColor: '#6366f1'
+        title: "Error",
+        text: "Something went wrong. Please try again later.",
+        icon: "error",
+        confirmButtonColor: "#C9A87C",
+        background: "#0D0D0D",
+        color: "#FAFAF9",
       });
     } finally {
       setIsSubmitting(false);
@@ -85,131 +188,130 @@ const ContactPage = () => {
   };
 
   return (
-    <>
-      <div className="text-center lg:mt-[5%] mt-10 mb-2 sm:px-0 px-[5%]">
-        <h2
-          data-aos="fade-down"
-          data-aos-duration="1000"
-          className="inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
-        >
-          <span
-            style={{
-              color: "#6366f1",
-              backgroundImage:
-                "linear-gradient(45deg, #6366f1 10%, #a855f7 93%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Contact Me
-          </span>
-        </h2>
-        <p
-          data-aos="fade-up"
-          data-aos-duration="1100"
-          className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
-        >
-          Got a question? Send me a message, and I&apos;ll get back to you soon.
-        </p>
-      </div>
+    <section className="relative py-section bg-background overflow-hidden" id="Contact">
+      {/* Background decoration */}
+      <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/[0.02]" />
 
-      <div
-        className="h-auto py-10 flex items-center justify-center px-[5%] md:px-0"
-        id="Contact"
-      >
-        <div className="container px-[1%] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-[45%_55%] 2xl:grid-cols-[35%_65%] gap-12">
-          <div
-            data-aos="fade-right"
-            data-aos-duration="1200"
-            className="bg-white/5 backdrop-blur-xl rounded-3xl shadow-2xl p-5 py-10 sm:p-10 transform transition-all duration-300 hover:shadow-[#6366f1]/10"
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        {/* Section header */}
+        <div ref={headerRef} className="mb-16">
+          <motion.span
+            className="font-sans text-caption uppercase tracking-[0.3em] text-accent block mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
           >
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
-                  Get in Touch
-                </h2>
-                <p className="text-gray-400">
-                  Have something to discuss? Send me a message and let&apos;s talk.
-                </p>
-              </div>
-              <Share2 className="w-10 h-10 text-[#6366f1] opacity-50" />
-            </div>
+            Contact
+          </motion.span>
+          <motion.div
+            className="w-12 h-px bg-accent mb-8"
+            initial={{ scaleX: 0 }}
+            animate={isHeaderInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            style={{ transformOrigin: "left" }}
+          />
+          <motion.h2
+            className="font-serif text-display text-foreground max-w-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            {"Let's work"} <span className="text-accent">together</span>
+          </motion.h2>
+          <motion.p
+            className="font-sans text-body text-foreground-muted max-w-xl mt-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isHeaderInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            Have a project in mind or just want to say hello? I would love to hear from you.
+          </motion.p>
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div
-                data-aos="fade-up"
-                data-aos-delay="100"
-                className="relative group"
-              >
-                <User className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className="w-full p-4 pl-12 bg-white/10 rounded-xl border border-white/20 placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50"
-                  required
-                />
-              </div>
-              <div
-                data-aos="fade-up"
-                data-aos-delay="200"
-                className="relative group"
-              >
-                <Mail className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className="w-full p-4 pl-12 bg-white/10 rounded-xl border border-white/20 placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50"
-                  required
-                />
-              </div>
-              <div
-                data-aos="fade-up"
-                data-aos-delay="300"
-                className="relative group"
-              >
-                <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
-                <textarea
-                  name="message"
-                  placeholder="Your Message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className="w-full resize-none p-4 pl-12 bg-white/10 rounded-xl border border-white/20 placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[9.9rem] disabled:opacity-50"
-                  required
-                />
-              </div>
-              <button
-                data-aos="fade-up"
-                data-aos-delay="400"
+        {/* Main content grid */}
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+          {/* Contact form */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <InputField
+                label="Your Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                disabled={isSubmitting}
+              />
+              <InputField
+                label="Your Email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isSubmitting}
+              />
+              <InputField
+                label="Your Message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                isTextarea
+              />
+              <motion.button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+                whileTap={!isSubmitting ? { scale: 0.98 } : {}}
               >
-                <Send className="w-5 h-5" />
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </button>
+                <Send className="w-4 h-4" />
+                <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
+              </motion.button>
             </form>
 
-            <div className="mt-10 pt-6 border-t border-white/10 flex justify-center space-x-6">
-              <SocialLinks />
+            {/* Social links */}
+            <div className="mt-16 pt-16 border-t border-border">
+              <h3 className="font-sans text-caption uppercase tracking-wider text-foreground-muted mb-6">
+                Connect with me
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {socialLinks.map((social, index) => (
+                  <SocialCard key={social.label} {...social} index={index} />
+                ))}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-3 py-3 md:p-10 md:py-8 shadow-2xl transform transition-all duration-300 hover:shadow-[#6366f1]/10">
-            <Komentar />
-          </div>
+          {/* Comments section */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="sticky top-32">
+              <div className="border border-border p-6 lg:p-8">
+                <h3 className="font-serif text-heading text-foreground mb-6">
+                  Guest Book
+                </h3>
+                <p className="font-sans text-body-sm text-foreground-muted mb-8">
+                  Leave a message, share your thoughts, or just say hello. I appreciate every visitor.
+                </p>
+                <Komentar />
+              </div>
+
+              {/* Decorative element */}
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-r border-b border-accent/30 -z-10" />
+            </div>
+          </motion.div>
         </div>
       </div>
-    </>
+    </section>
   );
 };
 

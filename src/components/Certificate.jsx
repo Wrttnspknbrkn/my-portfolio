@@ -1,197 +1,134 @@
-import React, { useState } from "react"
-import { Modal, IconButton, Box, Fade, Backdrop, Zoom, Typography } from "@mui/material"
-import CloseIcon from "@mui/icons-material/Close"
-import FullscreenIcon from "@mui/icons-material/Fullscreen"
+import React, { useState, memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Maximize2 } from "lucide-react";
 
-const Certificate = ({ ImgSertif }) => {
-	const [open, setOpen] = useState(false)
+const Certificate = memo(({ ImgSertif }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-	const handleOpen = () => {
-		setOpen(true)
-	}
+  return (
+    <>
+      {/* Thumbnail */}
+      <motion.div
+        className="group relative overflow-hidden cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setIsOpen(true)}
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      >
+        {/* Image container */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-foreground-muted/5">
+          {!imageLoaded && <div className="absolute inset-0 skeleton" />}
 
-	const handleClose = () => {
-		setOpen(false)
-	}
+          <motion.img
+            src={ImgSertif}
+            alt="Certificate"
+            className={`w-full h-full object-cover transition-opacity duration-500 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          />
 
-	return (
-		<Box component="div" sx={{ width: "100%" }}>
-			{/* Thumbnail Container */}
-			<Box
-				className=""
-				sx={{
-					position: "relative",
-					overflow: "hidden",
-					borderRadius: 2,
-					boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
-					transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-					"&:hover": {
-						transform: "translateY(-5px)",
-						boxShadow: "0 12px 24px rgba(0,0,0,0.2)",
-						"& .overlay": {
-							opacity: 1,
-						},
-						"& .hover-content": {
-							transform: "translate(-50%, -50%)",
-							opacity: 1,
-						},
-						"& .certificate-image": {
-							filter: "contrast(1.05) brightness(1) saturate(1.1)",
-						},
-					},
-				}}>
-				{/* Certificate Image with Initial Filter */}
-				<Box
-					sx={{
-						position: "relative",
-						"&::before": {
-							content: '""',
-							position: "absolute",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							backgroundColor: "rgba(0, 0, 0, 0.1)",
-							zIndex: 1,
-						},
-					}}>
-					<img
-						className="certificate-image"
-						src={ImgSertif}
-						alt="Certificate"
-						style={{
-							width: "100%",
-							height: "auto",
-							display: "block",
-							objectFit: "cover",
-							filter: "contrast(1.10) brightness(0.9) saturate(1.1)",
-							transition: "filter 0.3s ease",
-						}}
-						onClick={handleOpen}
-					/>
-				</Box>
+          {/* Hover overlay */}
+          <motion.div
+            className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              initial={{ y: 10, opacity: 0 }}
+              animate={isHovered ? { y: 0, opacity: 1 } : { y: 10, opacity: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <Maximize2
+                className="w-6 h-6 text-accent"
+                strokeWidth={1.5}
+              />
+              <span className="font-sans text-caption text-foreground uppercase tracking-wider">
+                View
+              </span>
+            </motion.div>
+          </motion.div>
+        </div>
 
-				{/* Hover Overlay */}
-				<Box
-					className="overlay"
-					sx={{
-						position: "absolute",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						opacity: 0,
-						transition: "all 0.3s ease",
-						cursor: "pointer",
-						zIndex: 2,
-					}}
-					onClick={handleOpen}>
-					{/* Hover Content */}
-					<Box
-						className="hover-content"
-						sx={{
-							position: "absolute",
-							top: "50%",
-							left: "50%",
-							transform: "translate(-50%, -60%)",
-							opacity: 0,
-							transition: "all 0.4s ease",
-							textAlign: "center",
-							width: "100%",
-							color: "white",
-						}}>
-						<FullscreenIcon
-							sx={{
-								fontSize: 40,
-								mb: 1,
-								filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
-							}}
-						/>
-						<Typography
-							variant="h6"
-							sx={{
-								fontWeight: 600,
-								textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-							}}>
-							View Certificate
-						</Typography>
-					</Box>
-				</Box>
-			</Box>
+        {/* Border accent */}
+        <motion.div
+          className="absolute bottom-0 left-0 h-px bg-accent"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: isHovered ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          style={{ transformOrigin: "left" }}
+        />
+      </motion.div>
 
-			{/* Modal */}
-			<Modal
-				open={open}
-				onClose={handleClose}
-				aria-labelledby="modal-modal-title"
-				aria-describedby="modal-modal-description"
-				BackdropComponent={Backdrop}
-				BackdropProps={{
-					timeout: 300,
-					sx: {
-						backgroundColor: "rgba(0, 0, 0, 0.9)",
-						backdropFilter: "blur(5px)",
-					},
-				}}
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					margin: 0,
-					padding: 0,
-					"& .MuiBackdrop-root": {
-						backgroundColor: "rgba(0, 0, 0, 0.9)",
-					},
-				}}>
-				<Box
-					sx={{
-						position: "relative",
-						width: "auto",
-						maxWidth: "90vw",
-						maxHeight: "90vh",
-						m: 0,
-						p: 0,
-						outline: "none",
-						"&:focus": {
-							outline: "none",
-						},
-					}}>
-					{/* Close Button */}
-					<IconButton
-						onClick={handleClose}
-						sx={{
-							position: "absolute",
-							right: 16,
-							top: 16,
-							color: "white",
-							bgcolor: "rgba(0,0,0,0.6)",
-							zIndex: 1,
-							padding: 1,
-							"&:hover": {
-								bgcolor: "rgba(0,0,0,0.8)",
-								transform: "scale(1.1)",
-							},
-						}}
-						size="large">
-						<CloseIcon sx={{ fontSize: 24 }} />
-					</IconButton>
+      {/* Modal */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-background/95 backdrop-blur-xl"
+              onClick={() => setIsOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
 
-					{/* Modal Image */}
-					<img
-						src={ImgSertif}
-						alt="Certificate Full View"
-						style={{
-							display: "block",
-							maxWidth: "100%",
-							maxHeight: "90vh",
-							margin: "0 auto",
-							objectFit: "contain",
-						}}
-					/>
-				</Box>
-			</Modal>
-		</Box>
-	)
-}
+            {/* Close button */}
+            <motion.button
+              className="absolute top-6 right-6 p-3 text-foreground-muted hover:text-foreground transition-colors z-10"
+              onClick={() => setIsOpen(false)}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-6 h-6" strokeWidth={1.5} />
+            </motion.button>
 
-export default Certificate
+            {/* Image */}
+            <motion.img
+              src={ImgSertif}
+              alt="Certificate Full View"
+              className="relative max-w-full max-h-[85vh] object-contain"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            />
+
+            {/* Corner decorations */}
+            <motion.div
+              className="absolute top-8 left-8 w-16 h-16 border-l border-t border-accent/30"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            />
+            <motion.div
+              className="absolute bottom-8 right-8 w-16 h-16 border-r border-b border-accent/30"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+});
+
+export default Certificate;

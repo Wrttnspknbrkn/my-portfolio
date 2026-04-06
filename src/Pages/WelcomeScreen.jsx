@@ -1,173 +1,204 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code2, Github, Globe, User } from 'lucide-react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-
-const TypewriterEffect = ({ text }) => {
-  const [displayText, setDisplayText] = useState('');
-  
-  useEffect(() => {
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index <= text.length) {
-        setDisplayText(text.slice(0, index));
-        index++;
-      } else {
-        clearInterval(timer);
-      }
-    }, 260);
-    
-    return () => clearInterval(timer);
-  }, [text]);
-
-  return (
-    <span className="inline-block">
-      {displayText}
-      <span className="animate-pulse">|</span>
-    </span>
-  );
-};
-
-const BackgroundEffect = () => (
-  <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-3xl animate-pulse" />
-    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 via-transparent to-purple-600/10 blur-2xl animate-float" />
-  </div>
-);
-
-const IconButton = ({ Icon }) => (
-  <div className="relative group hover:scale-110 transition-transform duration-300">
-    <div className="absolute -inset-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full blur opacity-30 group-hover:opacity-75 transition duration-300" />
-    <div className="relative p-2 sm:p-3 bg-black/50 backdrop-blur-sm rounded-full border border-white/10">
-      <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
-    </div>
-  </div>
-);
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [currentWord, setCurrentWord] = useState(0);
+  const containerRef = useRef(null);
+
+  const words = ['Create', 'Design', 'Develop', 'Inspire'];
 
   useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: false,
-      mirror: false,
-    });
+    // Simulate loading progress
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 50);
 
+    // Cycle through words
+    const wordInterval = setInterval(() => {
+      setCurrentWord((prev) => (prev + 1) % words.length);
+    }, 600);
+
+    // Complete loading after animation
     const timer = setTimeout(() => {
       setIsLoading(false);
       setTimeout(() => {
         onLoadingComplete?.();
-      }, 1000);
-    }, 4000);
-    
-    return () => clearTimeout(timer);
+      }, 800);
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(progressInterval);
+      clearInterval(wordInterval);
+    };
   }, [onLoadingComplete]);
 
   const containerVariants = {
     exit: {
       opacity: 0,
-      scale: 1.1,
-      filter: "blur(10px)",
       transition: {
         duration: 0.8,
-        ease: "easeInOut",
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
   };
 
-  const childVariants = {
-    exit: {
-      y: -20,
+  const letterVariants = {
+    hidden: { y: 100, opacity: 0 },
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.6,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    }),
+    exit: (i) => ({
+      y: -50,
       opacity: 0,
       transition: {
+        delay: i * 0.02,
         duration: 0.4,
-        ease: "easeInOut"
-      }
-    }
+        ease: [0.4, 0, 0.2, 1],
+      },
+    }),
   };
+
+  const name = "Kelvin Fameyeh";
 
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
-          className="fixed inset-0 bg-[#030014]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          ref={containerRef}
+          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center"
+          initial={{ opacity: 1 }}
           exit="exit"
           variants={containerVariants}
         >
-          <BackgroundEffect />
-          
-          <div className="relative min-h-screen flex items-center justify-center px-4">
-            <div className="w-full max-w-4xl mx-auto">
-              {/* Icons */}
-              <motion.div 
-                className="flex justify-center gap-3 sm:gap-4 md:gap-8 mb-6 sm:mb-8 md:mb-12"
-                variants={childVariants}
-              >
-                {[Code2, User, Github].map((Icon, index) => (
-                  <div key={index} data-aos="fade-down" data-aos-delay={index * 200}>
-                    <IconButton Icon={Icon} />
-                  </div>
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-[0.02]">
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, rgba(201, 168, 124, 0.3) 1px, transparent 0)`,
+                backgroundSize: '40px 40px',
+              }}
+            />
+          </div>
+
+          {/* Accent line decoration */}
+          <motion.div
+            className="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-accent/30 to-transparent"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 80 }}
+            transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
+          />
+
+          <motion.div
+            className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-accent/30 to-transparent"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: -80 }}
+            transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
+          />
+
+          <div className="relative z-10 text-center px-6">
+            {/* Small label */}
+            <motion.p
+              className="font-sans text-caption uppercase tracking-[0.3em] text-foreground-muted mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              Portfolio
+            </motion.p>
+
+            {/* Main name - letter by letter */}
+            <div className="overflow-hidden mb-6">
+              <h1 className="font-serif text-display-lg text-foreground flex flex-wrap justify-center gap-x-4">
+                {name.split(' ').map((word, wordIndex) => (
+                  <span key={wordIndex} className="flex">
+                    {word.split('').map((letter, letterIndex) => (
+                      <motion.span
+                        key={letterIndex}
+                        custom={wordIndex * 10 + letterIndex}
+                        variants={letterVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="inline-block"
+                      >
+                        {letter}
+                      </motion.span>
+                    ))}
+                  </span>
                 ))}
-              </motion.div>
+              </h1>
+            </div>
 
-              {/* Welcome Text */}
-              <motion.div 
-                className="text-center mb-6 sm:mb-8 md:mb-12"
-                variants={childVariants}
-              >
-                <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold space-y-2 sm:space-y-4">
-                  <div className="mb-2 sm:mb-4">
-                    <span data-aos="fade-right" data-aos-delay="200" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      Welcome
-                    </span>{' '}
-                    <span data-aos="fade-right" data-aos-delay="400" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      To
-                    </span>{' '}
-                    <span data-aos="fade-right" data-aos-delay="600" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      My
-                    </span>
-                  </div>
-                  <div>
-                    <span data-aos="fade-up" data-aos-delay="800" className="inline-block px-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      Portfolio
-                    </span>{' '}
-                    <span data-aos="fade-up" data-aos-delay="1000" className="inline-block px-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      Website
-                    </span>
-                  </div>
-                </h1>
-              </motion.div>
-
-              {/* Website Link */}
-              <motion.div 
-                className="text-center"
-                variants={childVariants}
-                data-aos="fade-up"
-                data-aos-delay="1200"
-              >
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full relative group hover:scale-105 transition-transform duration-300"
-                  target="_blank"
-                  rel="noopener noreferrer"
+            {/* Animated word carousel */}
+            <div className="h-8 overflow-hidden mb-12">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={currentWord}
+                  className="font-sans text-body-lg text-accent tracking-wide"
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -30, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300" />
-                  <div className="relative flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
-                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      <TypewriterEffect text="Discover more" />
-                    </span>
-                  </div>
-                </a>
-              </motion.div>
+                  {words[currentWord]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="relative w-48 mx-auto">
+              {/* Progress bar background */}
+              <div className="h-px bg-foreground-muted/20 w-full" />
+              
+              {/* Progress bar fill */}
+              <motion.div
+                className="absolute top-0 left-0 h-px bg-accent"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.1, ease: 'linear' }}
+              />
+
+              {/* Progress number */}
+              <motion.p
+                className="font-sans text-caption text-foreground-muted mt-4 tabular-nums"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                {progress}%
+              </motion.p>
             </div>
           </div>
+
+          {/* Corner decorations */}
+          <motion.div
+            className="absolute top-8 left-8 w-12 h-12 border-l border-t border-accent/30"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+          />
+          <motion.div
+            className="absolute bottom-8 right-8 w-12 h-12 border-r border-b border-accent/30"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+          />
         </motion.div>
       )}
     </AnimatePresence>

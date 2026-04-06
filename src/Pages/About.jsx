@@ -174,7 +174,6 @@ const AboutPage = () => {
       <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Section header */}
         <div className="mb-20">
           <motion.div
             className="flex items-center gap-4 mb-6"
@@ -189,22 +188,17 @@ const AboutPage = () => {
           </motion.div>
         </div>
 
-        {/* Main content grid */}
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
-          {/* Left column - Image */}
           <motion.div
             className="relative lg:sticky lg:top-32"
             style={{ y: imageY, rotate: imageRotate }}
           >
-            {/* Image container — extra bottom padding reserves space for the overlapping badge */}
-            <div className="relative aspect-[4/5] pb-0">
+            <div className="relative aspect-[4/5]">
               <RevealImage src="/profile.jpeg" alt="Kelvin Fameyeh" />
 
-              {/* Decorative frame */}
               <div className="absolute -top-4 -left-4 w-32 h-32 border-l-2 border-t-2 border-accent/40 pointer-events-none" />
               <div className="absolute -bottom-4 -right-4 w-32 h-32 border-r-2 border-b-2 border-accent/40 pointer-events-none" />
 
-              {/* CPU icon — anchored to top-right corner of the image */}
               <motion.div
                 className="absolute right-3 top-3 w-10 h-10 sm:w-12 sm:h-12 bg-background border border-accent/50 flex items-center justify-center z-20"
                 animate={{ y: [0, -8, 0] }}
@@ -212,26 +206,24 @@ const AboutPage = () => {
               >
                 <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
               </motion.div>
-            </div>
 
-            {/* Experience badge — sits below the image, left-aligned so it never overflows right */}
-            <motion.div
-              className="relative mt-0 -translate-y-8 ml-0 w-fit bg-background px-6 py-5 border border-accent/30 shadow-xl"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <span className="font-serif text-display text-accent leading-none">
-                {yearsExperience}+
-              </span>
-              <span className="block font-sans text-caption text-foreground-muted uppercase tracking-wider mt-2 whitespace-nowrap">
-                Years of Excellence
-              </span>
-            </motion.div>
+              <motion.div
+                className="absolute bottom-0 left-0 translate-y-1/4 w-36 h-36 bg-background flex flex-col items-center justify-center border border-accent/30 shadow-xl z-20"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+              >
+                <span className="font-serif text-display text-accent leading-none">
+                  {yearsExperience}+
+                </span>
+                <span className="font-sans text-caption text-foreground-muted uppercase tracking-wider mt-2 text-center leading-tight px-2">
+                  Years of Excellence
+                </span>
+              </motion.div>
+            </div>
           </motion.div>
 
-          {/* Right column - Content */}
           <div ref={textRef} className="lg:pt-12">
             <motion.h2
               className="font-serif text-display text-foreground mb-8"
@@ -258,7 +250,6 @@ const AboutPage = () => {
               </p>
             </motion.div>
 
-            {/* Core Technologies */}
             <motion.div
               className="mb-12"
               initial={{ opacity: 0, y: 30 }}
@@ -278,7 +269,6 @@ const AboutPage = () => {
               </div>
             </motion.div>
 
-            {/* CTA */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4"
               initial={{ opacity: 0, y: 30 }}
@@ -308,7 +298,6 @@ const AboutPage = () => {
           </div>
         </div>
 
-        {/* Stats section */}
         <div className="mt-32">
           <motion.div
             className="text-center mb-16"

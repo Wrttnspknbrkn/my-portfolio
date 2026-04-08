@@ -249,22 +249,25 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
     return () => tl.kill();
   }, []);
 
-  // Progress animation - medium pace (7 seconds total)
+  // Progress animation - medium pace (7 seconds total) - runs only once
   useEffect(() => {
     const duration = 7000;
     const start = Date.now();
+    let hasSetCanSkip = false;
+    let animationId;
     
     const updateProgress = () => {
       const elapsed = Date.now() - start;
       const prog = Math.min((elapsed / duration) * 100, 100);
       setProgress(Math.round(prog));
       
-      if (prog >= 35 && !canSkip) {
+      if (prog >= 35 && !hasSetCanSkip) {
+        hasSetCanSkip = true;
         setCanSkip(true);
       }
       
       if (prog < 100) {
-        requestAnimationFrame(updateProgress);
+        animationId = requestAnimationFrame(updateProgress);
       } else {
         setTimeout(() => {
           setIsLoading(false);
@@ -273,8 +276,12 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       }
     };
     
-    requestAnimationFrame(updateProgress);
-  }, [onLoadingComplete, canSkip]);
+    animationId = requestAnimationFrame(updateProgress);
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, []); // Empty dependency - runs only once on mount
 
   // Skip function
   const handleSkip = useCallback(() => {

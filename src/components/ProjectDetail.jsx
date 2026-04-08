@@ -113,20 +113,30 @@ const ProjectDetails = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    const selectedProject = storedProjects.find((p) => String(p.id) === id);
+    // Try to find by id or by title (URL encoded)
+    const decodedId = decodeURIComponent(id);
+    const selectedProject = storedProjects.find(
+      (p) => String(p.id) === id || String(p.id) === decodedId || p.Title === decodedId
+    );
     
     if (selectedProject) {
+      // Handle different field names from Firebase
       const enhancedProject = {
         ...selectedProject,
-        Features: selectedProject.Features || [],
-        TechStack: selectedProject.TechStack || [],
-        Github: selectedProject.Github || 'https://github.com/Wrttnspknbrkn',
-        Year: selectedProject.Year || new Date().getFullYear().toString(),
+        Description: selectedProject.Description || selectedProject.Deskripsi || 
+          "A detailed project showcasing modern web development techniques and best practices.",
+        Features: selectedProject.Features || selectedProject.Fitur || [],
+        TechStack: selectedProject.TechStack || selectedProject.Tech || [],
+        Github: selectedProject.Github || selectedProject.github || 'https://github.com/Wrttnspknbrkn',
+        Link: selectedProject.Link || selectedProject.link || selectedProject.Demo || '',
+        Year: selectedProject.Year || selectedProject.Tahun || new Date().getFullYear().toString(),
       };
       setProject(enhancedProject);
 
       // Find next project
-      const currentIndex = storedProjects.findIndex((p) => String(p.id) === id);
+      const currentIndex = storedProjects.findIndex(
+        (p) => String(p.id) === id || String(p.id) === decodedId || p.Title === decodedId
+      );
       if (currentIndex < storedProjects.length - 1) {
         setNextProject(storedProjects[currentIndex + 1]);
       } else if (storedProjects.length > 1) {

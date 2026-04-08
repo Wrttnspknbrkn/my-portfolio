@@ -5,7 +5,6 @@ import gsap from 'gsap';
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [canSkip, setCanSkip] = useState(false);
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -14,161 +13,183 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
   const linesRef = useRef([]);
   const particlesRef = useRef([]);
 
-  // Create diverse tech particles on canvas
+  // Create unique tech-themed canvas animation
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const ctx = canvasRef.current.getContext('2d');
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    canvasRef.current.width = width;
-    canvasRef.current.height = height;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    let animationId;
+    let mouseX = width / 2;
+    let mouseY = height / 2;
 
-    // Particle types: dots, squares, triangles, plus signs, hollow circles
-    const particleTypes = ['dot', 'square', 'triangle', 'plus', 'ring', 'diamond'];
-    const particles = [];
-    const particleCount = 50;
+    // Create circuit-like nodes and connections
+    const nodes = [];
+    const nodeCount = 35;
 
-    // Create diverse particles
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
+    for (let i = 0; i < nodeCount; i++) {
+      nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 6 + 3,
-        type: particleTypes[Math.floor(Math.random() * particleTypes.length)],
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.02,
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.02 + 0.01,
-        alpha: Math.random() * 0.4 + 0.2,
+        baseX: Math.random() * width,
+        baseY: Math.random() * height,
+        size: Math.random() * 4 + 2,
+        type: ['node', 'pulse', 'hex', 'bracket'][Math.floor(Math.random() * 4)],
+        phase: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.01 + 0.005,
+        orbitRadius: Math.random() * 30 + 10,
+        alpha: Math.random() * 0.5 + 0.3,
       });
     }
 
-    particlesRef.current = particles;
+    // Draw unique shapes
+    const drawNode = (node, time) => {
+      const pulse = Math.sin(time * node.speed + node.phase);
+      const size = node.size * (1 + pulse * 0.3);
+      const alpha = node.alpha * (0.7 + pulse * 0.3);
 
-    // Draw different particle shapes
-    const drawParticle = (p) => {
-      const pulseScale = 1 + Math.sin(p.pulse) * 0.2;
-      const size = p.size * pulseScale;
-      const alpha = p.alpha + Math.sin(p.pulse) * 0.1;
-      
       ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation);
+      ctx.translate(node.x, node.y);
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = `rgba(201, 168, 124, ${alpha})`;
-      ctx.fillStyle = `rgba(201, 168, 124, ${alpha * 0.5})`;
-      ctx.lineWidth = 1;
-
-      switch (p.type) {
-        case 'dot':
+      
+      switch (node.type) {
+        case 'node':
+          // Glowing dot with ring
+          ctx.fillStyle = `rgba(201, 168, 124, ${alpha})`;
           ctx.beginPath();
-          ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, size, 0, Math.PI * 2);
           ctx.fill();
-          break;
-        case 'square':
-          ctx.strokeRect(-size / 2, -size / 2, size, size);
-          break;
-        case 'triangle':
+          ctx.strokeStyle = `rgba(201, 168, 124, ${alpha * 0.4})`;
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(0, -size / 2);
-          ctx.lineTo(size / 2, size / 2);
-          ctx.lineTo(-size / 2, size / 2);
+          ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        case 'pulse':
+          // Pulsing ring
+          ctx.strokeStyle = `rgba(201, 168, 124, ${alpha})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, size * (1.5 + pulse), 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        case 'hex':
+          // Small hexagon
+          ctx.strokeStyle = `rgba(201, 168, 124, ${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i - Math.PI / 6;
+            const x = Math.cos(angle) * size * 1.5;
+            const y = Math.sin(angle) * size * 1.5;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
           ctx.closePath();
           ctx.stroke();
           break;
-        case 'plus':
+        case 'bracket':
+          // Code brackets < >
+          ctx.strokeStyle = `rgba(201, 168, 124, ${alpha})`;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(-size / 2, 0);
-          ctx.lineTo(size / 2, 0);
-          ctx.moveTo(0, -size / 2);
-          ctx.lineTo(0, size / 2);
+          ctx.moveTo(-size, -size);
+          ctx.lineTo(-size * 2, 0);
+          ctx.lineTo(-size, size);
           ctx.stroke();
-          break;
-        case 'ring':
           ctx.beginPath();
-          ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-          ctx.stroke();
-          break;
-        case 'diamond':
-          ctx.beginPath();
-          ctx.moveTo(0, -size / 2);
-          ctx.lineTo(size / 2, 0);
-          ctx.lineTo(0, size / 2);
-          ctx.lineTo(-size / 2, 0);
-          ctx.closePath();
+          ctx.moveTo(size, -size);
+          ctx.lineTo(size * 2, 0);
+          ctx.lineTo(size, size);
           ctx.stroke();
           break;
       }
       ctx.restore();
     };
 
-    const animate = () => {
+    const animate = (time) => {
       ctx.clearRect(0, 0, width, height);
+      
+      // Draw gradient background glow in center
+      const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width/2);
+      gradient.addColorStop(0, 'rgba(201, 168, 124, 0.03)');
+      gradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
 
-      particles.forEach((p, i) => {
+      // Update and draw nodes
+      nodes.forEach((node, i) => {
+        // Gentle orbital movement
+        const orbitAngle = time * 0.0003 + node.phase;
+        node.x = node.baseX + Math.cos(orbitAngle) * node.orbitRadius;
+        node.y = node.baseY + Math.sin(orbitAngle) * node.orbitRadius;
+
         // Subtle mouse influence
-        const dx = mousePos.x - p.x;
-        const dy = mousePos.y - p.y;
+        const dx = mouseX - node.x;
+        const dy = mouseY - node.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          const force = (120 - dist) / 120;
-          p.vx += dx * force * 0.0003;
-          p.vy += dy * force * 0.0003;
+        if (dist < 150) {
+          const force = (150 - dist) / 150 * 0.3;
+          node.x += dx * force * 0.02;
+          node.y += dy * force * 0.02;
         }
 
-        // Update position (slower movement)
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rotation += p.rotationSpeed;
-        p.pulse += p.pulseSpeed;
+        drawNode(node, time * 0.001);
 
-        // Damping
-        p.vx *= 0.995;
-        p.vy *= 0.995;
-
-        // Boundary wrap
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
-        if (p.y < -20) p.y = height + 20;
-        if (p.y > height + 20) p.y = -20;
-
-        // Draw particle
-        drawParticle(p);
-
-        // Draw subtle connections between nearby particles
-        particles.forEach((other, j) => {
+        // Draw connections to nearby nodes
+        nodes.forEach((other, j) => {
           if (i >= j) return;
-          const d = Math.sqrt((p.x - other.x) ** 2 + (p.y - other.y) ** 2);
-          if (d < 100) {
+          const d = Math.sqrt((node.x - other.x) ** 2 + (node.y - other.y) ** 2);
+          if (d < 120) {
+            const lineAlpha = (1 - d / 120) * 0.15;
             ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
+            ctx.moveTo(node.x, node.y);
             ctx.lineTo(other.x, other.y);
-            ctx.strokeStyle = `rgba(201, 168, 124, ${(1 - d / 100) * 0.08})`;
+            ctx.strokeStyle = `rgba(201, 168, 124, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
+
+            // Draw small dot at midpoint of some connections
+            if (d < 80 && Math.random() > 0.95) {
+              ctx.fillStyle = `rgba(201, 168, 124, ${lineAlpha * 2})`;
+              ctx.beginPath();
+              ctx.arc((node.x + other.x) / 2, (node.y + other.y) / 2, 1.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
         });
       });
 
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
-    const animationId = requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
 
     const handleResize = () => {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+
+    const handleMouseMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+    
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [mousePos]);
+  }, []); // Empty dependency - runs once
 
   // GSAP Timeline for entrance animations
   useEffect(() => {
@@ -255,11 +276,6 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
     requestAnimationFrame(updateProgress);
   }, [onLoadingComplete, canSkip]);
 
-  // Mouse tracking
-  const handleMouseMove = useCallback((e) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
-  }, []);
-
   // Skip function
   const handleSkip = useCallback(() => {
     if (canSkip) {
@@ -283,7 +299,6 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
             filter: 'blur(15px)',
           }}
           transition={{ duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
-          onMouseMove={handleMouseMove}
           onClick={handleSkip}
         >
           {/* Tech particles canvas */}

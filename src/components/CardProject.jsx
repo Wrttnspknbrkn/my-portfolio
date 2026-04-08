@@ -33,23 +33,23 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Image container */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-background-secondary">
+      {/* Image container - controlled height with full image visible */}
+      <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden bg-background-secondary flex items-center justify-center">
         {/* Loading skeleton */}
         {!imageLoaded && (
           <div className="absolute inset-0 skeleton" />
         )}
 
-        {/* Image - fills container while maintaining aspect */}
+        {/* Image - object-contain shows full image within controlled height */}
         <motion.img
           src={Img}
           alt={Title}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
+          className={`w-full h-full object-contain transition-opacity duration-500 ${
             imageLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => setImageLoaded(true)}
           animate={{
-            scale: isHovered ? 1.05 : 1,
+            scale: isHovered ? 1.03 : 1,
           }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         />

@@ -159,7 +159,7 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background px-[2%] sm:px-0 relative overflow-hidden">
+    <div className="min-h-screen bg-background px-[2%] sm:px-0 relative overflow-hidden pt-20 md:pt-24">
       {/* Background animations */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -inset-[10px] opacity-20">

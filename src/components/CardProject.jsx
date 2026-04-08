@@ -33,8 +33,8 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Image container - controlled height with full image visible */}
-      <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden bg-background-secondary flex items-center justify-center">
+      {/* Image container - enlarged height with full image visible */}
+      <div className="relative h-56 sm:h-64 md:h-72 lg:h-80 overflow-hidden bg-background-secondary flex items-center justify-center">
         {/* Loading skeleton */}
         {!imageLoaded && (
           <div className="absolute inset-0 skeleton" />

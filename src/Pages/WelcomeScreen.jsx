@@ -1,425 +1,453 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [currentWord, setCurrentWord] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [canSkip, setCanSkip] = useState(false);
-  const [interactionCount, setInteractionCount] = useState(0);
   const containerRef = useRef(null);
-  const progressBarRef = useRef(null);
-  const particlesRef = useRef(null);
+  const gridRef = useRef(null);
+  const textRef = useRef(null);
+  const orbsRef = useRef([]);
+  const linesRef = useRef([]);
+  const nodesRef = useRef([]);
 
-  const words = ['Create', 'Design', 'Develop', 'Inspire'];
+  // Create animated tech grid
+  useEffect(() => {
+    if (!gridRef.current) return;
 
-  // Mouse position for interactive cursor effect
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 150 };
-  const cursorX = useSpring(mouseX, springConfig);
-  const cursorY = useSpring(mouseY, springConfig);
+    const ctx = gridRef.current.getContext('2d');
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    gridRef.current.width = width;
+    gridRef.current.height = height;
 
-  // Handle mouse move for interactive effect
-  const handleMouseMove = useCallback((e) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      mouseX.set(e.clientX - rect.left);
-      mouseY.set(e.clientY - rect.top);
+    const nodes = [];
+    const nodeCount = 40;
+    const connections = [];
+
+    // Create nodes
+    for (let i = 0; i < nodeCount; i++) {
+      nodes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 2 + 1,
+        pulse: Math.random() * Math.PI * 2,
+      });
     }
-  }, [mouseX, mouseY]);
 
-  // Handle click/tap interaction
-  const handleInteraction = useCallback(() => {
-    setInteractionCount(prev => {
-      const newCount = prev + 1;
-      // Create a ripple effect at click position
-      if (containerRef.current) {
-        const ripple = document.createElement('div');
-        ripple.className = 'absolute w-4 h-4 bg-accent/40 rounded-full pointer-events-none';
-        ripple.style.left = `${cursorX.get()}px`;
-        ripple.style.top = `${cursorY.get()}px`;
-        ripple.style.transform = 'translate(-50%, -50%)';
-        containerRef.current.appendChild(ripple);
-        
-        gsap.to(ripple, {
-          scale: 20,
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power2.out',
-          onComplete: () => ripple.remove()
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      // Update and draw nodes
+      nodes.forEach((node, i) => {
+        // Mouse influence
+        const dx = mousePos.x - node.x;
+        const dy = mousePos.y - node.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          const force = (150 - dist) / 150;
+          node.vx += dx * force * 0.001;
+          node.vy += dy * force * 0.001;
+        }
+
+        // Update position
+        node.x += node.vx;
+        node.y += node.vy;
+        node.pulse += 0.02;
+
+        // Boundary check
+        if (node.x < 0 || node.x > width) node.vx *= -1;
+        if (node.y < 0 || node.y > height) node.vy *= -1;
+
+        // Draw node with pulse
+        const pulseScale = 1 + Math.sin(node.pulse) * 0.3;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * pulseScale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201, 168, 124, ${0.4 + Math.sin(node.pulse) * 0.2})`;
+        ctx.fill();
+
+        // Draw connections
+        nodes.forEach((other, j) => {
+          if (i === j) return;
+          const d = Math.sqrt((node.x - other.x) ** 2 + (node.y - other.y) ** 2);
+          if (d < 120) {
+            ctx.beginPath();
+            ctx.moveTo(node.x, node.y);
+            ctx.lineTo(other.x, other.y);
+            ctx.strokeStyle = `rgba(201, 168, 124, ${(1 - d / 120) * 0.15})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
         });
-      }
-      return newCount;
-    });
-  }, [cursorX, cursorY]);
+      });
 
-  // Skip to main content
-  const skipToContent = useCallback(() => {
+      requestAnimationFrame(animate);
+    };
+
+    const animationId = requestAnimationFrame(animate);
+
+    const handleResize = () => {
+      gridRef.current.width = window.innerWidth;
+      gridRef.current.height = window.innerHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mousePos]);
+
+  // GSAP Timeline for entrance
+  useEffect(() => {
+    const tl = gsap.timeline();
+
+    // Animate orbs with complex movement
+    orbsRef.current.forEach((orb, i) => {
+      if (!orb) return;
+      gsap.set(orb, { 
+        scale: 0, 
+        opacity: 0,
+        rotation: Math.random() * 360 
+      });
+      
+      tl.to(orb, {
+        scale: 1,
+        opacity: 1,
+        duration: 1.5,
+        ease: 'elastic.out(1, 0.5)',
+        delay: i * 0.2,
+      }, 0.3);
+
+      // Continuous floating animation
+      gsap.to(orb, {
+        y: 'random(-30, 30)',
+        x: 'random(-20, 20)',
+        rotation: '+=random(-15, 15)',
+        duration: 'random(4, 6)',
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: i * 0.3,
+      });
+    });
+
+    // Animate lines
+    linesRef.current.forEach((line, i) => {
+      if (!line) return;
+      gsap.from(line, {
+        scaleY: 0,
+        transformOrigin: i % 2 === 0 ? 'top' : 'bottom',
+        duration: 1.2,
+        ease: 'power4.out',
+        delay: 0.5 + i * 0.15,
+      });
+    });
+
+    // Text reveal animation
+    if (textRef.current) {
+      const chars = textRef.current.querySelectorAll('.char');
+      gsap.from(chars, {
+        y: 100,
+        opacity: 0,
+        rotationX: -90,
+        stagger: 0.03,
+        duration: 1,
+        ease: 'back.out(1.7)',
+        delay: 0.8,
+      });
+    }
+
+    return () => tl.kill();
+  }, []);
+
+  // Progress animation
+  useEffect(() => {
+    const duration = 5000;
+    const start = Date.now();
+    
+    const updateProgress = () => {
+      const elapsed = Date.now() - start;
+      const prog = Math.min((elapsed / duration) * 100, 100);
+      setProgress(Math.round(prog));
+      
+      if (prog >= 40 && !canSkip) {
+        setCanSkip(true);
+      }
+      
+      if (prog < 100) {
+        requestAnimationFrame(updateProgress);
+      } else {
+        setTimeout(() => {
+          setIsLoading(false);
+          setTimeout(() => onLoadingComplete?.(), 600);
+        }, 300);
+      }
+    };
+    
+    requestAnimationFrame(updateProgress);
+  }, [onLoadingComplete, canSkip]);
+
+  // Mouse tracking
+  const handleMouseMove = useCallback((e) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  // Skip function
+  const handleSkip = useCallback(() => {
     if (canSkip) {
       setIsLoading(false);
-      setTimeout(() => {
-        onLoadingComplete?.();
-      }, 500);
+      setTimeout(() => onLoadingComplete?.(), 400);
     }
   }, [canSkip, onLoadingComplete]);
 
-  // GSAP particle animations
-  useEffect(() => {
-    if (particlesRef.current) {
-      const particles = particlesRef.current.querySelectorAll('.particle');
-      particles.forEach((particle, i) => {
-        gsap.to(particle, {
-          y: 'random(-100, 100)',
-          x: 'random(-50, 50)',
-          opacity: 'random(0.3, 1)',
-          duration: 'random(3, 6)',
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: i * 0.1,
-        });
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    // Animate progress bar with GSAP for smoother effect
-    gsap.to(progressBarRef.current, {
-      width: '100%',
-      duration: 4.5,
-      ease: 'power2.inOut',
-      onUpdate: function() {
-        const prog = Math.round(this.progress() * 100);
-        setProgress(prog);
-        // Allow skip after 40% progress
-        if (prog >= 40 && !canSkip) {
-          setCanSkip(true);
-        }
-      }
-    });
-
-    // Cycle through words
-    const wordInterval = setInterval(() => {
-      setCurrentWord((prev) => (prev + 1) % words.length);
-    }, 1000);
-
-    // Complete loading after animation
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setTimeout(() => {
-        onLoadingComplete?.();
-      }, 800);
-    }, 5000);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(wordInterval);
-    };
-  }, [onLoadingComplete, canSkip]);
-
-  const containerVariants = {
-    exit: {
-      opacity: 0,
-      scale: 1.05,
-      transition: {
-        duration: 0.8,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    },
-  };
-
-  const letterVariants = {
-    hidden: { y: 120, opacity: 0, rotateX: -90 },
-    visible: (i) => ({
-      y: 0,
-      opacity: 1,
-      rotateX: 0,
-      transition: {
-        delay: i * 0.04,
-        duration: 0.7,
-        ease: [0.215, 0.61, 0.355, 1],
-      },
-    }),
-    exit: (i) => ({
-      y: -60,
-      opacity: 0,
-      rotateX: 45,
-      transition: {
-        delay: i * 0.015,
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    }),
-  };
-
   const name = "Kelvin Fameyeh";
-
-  // Generate particles
-  const particles = Array.from({ length: 25 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 2,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    delay: Math.random() * 2,
-  }));
 
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
           ref={containerRef}
-          className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center overflow-hidden cursor-none"
+          className="fixed inset-0 bg-[#0A0A0A] z-50 flex flex-col items-center justify-center overflow-hidden"
           initial={{ opacity: 1 }}
-          exit="exit"
-          variants={containerVariants}
+          exit={{ 
+            opacity: 0,
+            scale: 1.1,
+            filter: 'blur(20px)',
+          }}
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           onMouseMove={handleMouseMove}
-          onClick={handleInteraction}
+          onClick={handleSkip}
         >
-          {/* Custom cursor follower - desktop only */}
-          <motion.div
-            className="hidden md:block fixed w-6 h-6 border border-accent/50 rounded-full pointer-events-none z-50 mix-blend-difference"
-            style={{ x: cursorX, y: cursorY, translateX: '-50%', translateY: '-50%' }}
-          />
-          <motion.div
-            className="hidden md:block fixed w-2 h-2 bg-accent rounded-full pointer-events-none z-50"
-            style={{ 
-              x: cursorX, 
-              y: cursorY, 
-              translateX: '-50%', 
-              translateY: '-50%',
-            }}
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 1, repeat: Infinity }}
+          {/* Tech grid canvas */}
+          <canvas
+            ref={gridRef}
+            className="absolute inset-0 opacity-60"
           />
 
-          {/* Animated particles */}
-          <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
-            {particles.map((p) => (
+          {/* Animated gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(5)].map((_, i) => (
               <div
-                key={p.id}
-                className="particle absolute rounded-full bg-accent/40"
+                key={i}
+                ref={el => orbsRef.current[i] = el}
+                className="absolute rounded-full blur-3xl"
                 style={{
-                  width: p.size,
-                  height: p.size,
-                  left: `${p.left}%`,
-                  top: `${p.top}%`,
+                  width: `${150 + i * 80}px`,
+                  height: `${150 + i * 80}px`,
+                  background: `radial-gradient(circle, rgba(201, 168, 124, ${0.15 - i * 0.02}) 0%, transparent 70%)`,
+                  left: `${10 + i * 18}%`,
+                  top: `${15 + (i % 3) * 25}%`,
                 }}
               />
             ))}
           </div>
 
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 opacity-[0.03]">
-            <div 
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, rgba(201, 168, 124, 0.4) 1px, transparent 0)`,
-                backgroundSize: '32px 32px',
-              }}
-            />
+          {/* Vertical animated lines */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                ref={el => linesRef.current[i] = el}
+                className="absolute top-0 bottom-0 w-px"
+                style={{
+                  left: `${12 + i * 11}%`,
+                  background: `linear-gradient(to ${i % 2 === 0 ? 'bottom' : 'top'}, transparent, rgba(201, 168, 124, 0.08) 30%, rgba(201, 168, 124, 0.15) 50%, rgba(201, 168, 124, 0.08) 70%, transparent)`,
+                }}
+              />
+            ))}
           </div>
-
-          {/* Animated gradient orbs - follow mouse slightly */}
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-accent/10 blur-3xl"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-          <motion.div
-            className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-accent/10 blur-3xl"
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.4, 0.2, 0.4],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-
-          {/* Accent line decorations */}
-          <motion.div
-            className="absolute top-0 left-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
-            initial={{ opacity: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
-          />
-          <motion.div
-            className="absolute top-0 right-20 w-px h-full bg-gradient-to-b from-transparent via-accent/20 to-transparent"
-            initial={{ opacity: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
-          />
 
           {/* Horizontal scan line */}
           <motion.div
-            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent"
-            initial={{ top: '0%' }}
-            animate={{ top: '100%' }}
+            className="absolute left-0 right-0 h-[2px] pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(201, 168, 124, 0.6), rgba(201, 168, 124, 0.8), rgba(201, 168, 124, 0.6), transparent)',
+              boxShadow: '0 0 30px rgba(201, 168, 124, 0.5)',
+            }}
+            animate={{
+              top: ['0%', '100%'],
+            }}
             transition={{
-              duration: 2.5,
+              duration: 3,
               repeat: Infinity,
               ease: 'linear',
             }}
           />
 
-          <div className="relative z-10 text-center px-6">
-            {/* Small label */}
-            <motion.p
-              className="font-mono text-caption uppercase tracking-[0.4em] text-accent mb-10"
-              initial={{ opacity: 0, y: 20, letterSpacing: '0.1em' }}
-              animate={{ opacity: 1, y: 0, letterSpacing: '0.4em' }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+          {/* Glowing corner accents */}
+          {['top-0 left-0', 'top-0 right-0', 'bottom-0 left-0', 'bottom-0 right-0'].map((pos, i) => (
+            <motion.div
+              key={i}
+              className={`absolute ${pos} w-32 h-32 pointer-events-none`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
             >
-              Welcome
-            </motion.p>
+              <div 
+                className={`absolute ${pos.includes('top') ? 'top-8' : 'bottom-8'} ${pos.includes('left') ? 'left-8' : 'right-8'} w-20 h-20`}
+              >
+                <div 
+                  className={`absolute ${pos.includes('top') ? 'top-0' : 'bottom-0'} ${pos.includes('left') ? 'left-0' : 'right-0'} ${pos.includes('left') ? 'w-full bg-gradient-to-r' : 'w-full bg-gradient-to-l'} from-accent/60 to-transparent h-px`}
+                />
+                <div 
+                  className={`absolute ${pos.includes('top') ? 'top-0' : 'bottom-0'} ${pos.includes('left') ? 'left-0' : 'right-0'} ${pos.includes('top') ? 'h-full bg-gradient-to-b' : 'h-full bg-gradient-to-t'} from-accent/60 to-transparent w-px`}
+                />
+              </div>
+            </motion.div>
+          ))}
 
-            {/* Main name - letter by letter with 3D effect */}
-            <div className="overflow-visible mb-8 perspective-1000">
-              <h1 className="font-serif text-[clamp(2.5rem,10vw,7rem)] leading-[1.1] text-foreground flex flex-wrap justify-center gap-x-5">
-                {name.split(' ').map((word, wordIndex) => (
-                  <span key={wordIndex} className="flex overflow-visible">
-                    {word.split('').map((letter, letterIndex) => (
-                      <motion.span
-                        key={letterIndex}
-                        custom={wordIndex * 10 + letterIndex}
-                        variants={letterVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="inline-block"
-                        style={{ transformStyle: 'preserve-3d' }}
-                      >
-                        {letter}
-                      </motion.span>
-                    ))}
+          {/* Main content */}
+          <div className="relative z-10 text-center px-6">
+            {/* Subtitle */}
+            <motion.div
+              className="mb-8 overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
+              <motion.span
+                className="inline-block font-mono text-xs tracking-[0.5em] text-accent uppercase"
+                initial={{ y: 30 }}
+                animate={{ y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+              >
+                Portfolio
+              </motion.span>
+            </motion.div>
+
+            {/* Main name with character animation */}
+            <div ref={textRef} className="mb-10">
+              <h1 className="font-serif text-[clamp(2.8rem,11vw,8rem)] leading-[1] tracking-tight text-foreground flex flex-wrap justify-center">
+                {name.split('').map((char, i) => (
+                  <span
+                    key={i}
+                    className="char inline-block"
+                    style={{ 
+                      transformStyle: 'preserve-3d',
+                      marginRight: char === ' ' ? '0.3em' : '0',
+                    }}
+                  >
+                    {char === ' ' ? '\u00A0' : char}
                   </span>
                 ))}
               </h1>
             </div>
 
-            {/* Animated word carousel with fade */}
-            <div className="h-10 overflow-hidden mb-12">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={currentWord}
-                  className="font-sans text-body-lg text-accent tracking-widest uppercase"
-                  initial={{ y: 30, opacity: 0, filter: 'blur(6px)' }}
-                  animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-                  exit={{ y: -30, opacity: 0, filter: 'blur(6px)' }}
-                  transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-                >
-                  {words[currentWord]}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-
-            {/* Interaction hint */}
-            <motion.p
-              className="font-sans text-micro text-foreground-muted/50 mb-8"
+            {/* Role text with typewriter effect */}
+            <motion.div
+              className="h-8 mb-12 overflow-hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
+              transition={{ delay: 1.5, duration: 0.6 }}
             >
-              {interactionCount > 0 
-                ? `${interactionCount} interaction${interactionCount > 1 ? 's' : ''}`
-                : 'Click anywhere to interact'
-              }
-            </motion.p>
+              <motion.p
+                className="font-sans text-sm tracking-[0.3em] text-foreground-muted uppercase"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                Software Developer
+              </motion.p>
+            </motion.div>
 
-            {/* Progress indicator */}
-            <div className="relative w-56 mx-auto">
-              {/* Progress bar background */}
-              <div className="h-px bg-foreground-muted/10 w-full rounded-full overflow-hidden">
-                {/* Progress bar fill */}
-                <div
-                  ref={progressBarRef}
-                  className="h-full bg-gradient-to-r from-accent/50 via-accent to-accent/50 w-0"
-                  style={{ boxShadow: '0 0 20px rgba(201, 168, 124, 0.5)' }}
+            {/* Progress section */}
+            <motion.div
+              className="w-64 mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.8 }}
+            >
+              {/* Progress bar container */}
+              <div className="relative h-[2px] bg-foreground-muted/10 rounded-full overflow-hidden mb-6">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent/80 via-accent to-accent/80"
+                  style={{ 
+                    width: `${progress}%`,
+                    boxShadow: '0 0 20px rgba(201, 168, 124, 0.6)',
+                  }}
+                  transition={{ duration: 0.1 }}
+                />
+                {/* Glowing dot at progress end */}
+                <motion.div
+                  className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-accent rounded-full"
+                  style={{ 
+                    left: `${progress}%`,
+                    boxShadow: '0 0 15px rgba(201, 168, 124, 0.8)',
+                  }}
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
                 />
               </div>
 
-              {/* Progress number with glow */}
-              <motion.div
-                className="mt-6 flex items-center justify-center gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <span className="font-mono text-caption text-foreground-muted tabular-nums">
-                  {progress}%
+              {/* Progress number */}
+              <div className="flex items-center justify-center gap-3">
+                <span className="font-mono text-2xl text-foreground tabular-nums">
+                  {progress}
                 </span>
-                <motion.span
-                  className="w-1.5 h-1.5 rounded-full bg-accent"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              </motion.div>
+                <span className="font-mono text-xs text-foreground-muted">%</span>
+              </div>
 
-              {/* Skip option */}
+              {/* Skip hint */}
               <AnimatePresence>
                 {canSkip && (
-                  <motion.button
-                    className="mt-6 font-mono text-micro text-accent/70 hover:text-accent transition-colors"
+                  <motion.p
+                    className="mt-6 font-mono text-xs text-accent/60 cursor-pointer hover:text-accent transition-colors"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    onClick={skipToContent}
+                    transition={{ duration: 0.4 }}
                   >
-                    Click to skip
-                  </motion.button>
+                    Click anywhere to enter
+                  </motion.p>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Corner decorations with animation */}
+          {/* Bottom decoration */}
           <motion.div
-            className="absolute top-8 left-8 w-16 h-16"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 2, duration: 1 }}
           >
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-accent/50 to-transparent" />
-            <div className="absolute top-0 left-0 h-full w-px bg-gradient-to-b from-accent/50 to-transparent" />
+            <div className="w-8 h-px bg-accent/50" />
+            <span className="font-mono text-[10px] tracking-widest text-foreground-muted uppercase">
+              2025
+            </span>
+            <div className="w-8 h-px bg-accent/50" />
           </motion.div>
-          <motion.div
-            className="absolute top-8 right-8 w-16 h-16"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-l from-accent/50 to-transparent" />
-            <div className="absolute top-0 right-0 h-full w-px bg-gradient-to-b from-accent/50 to-transparent" />
-          </motion.div>
-          <motion.div
-            className="absolute bottom-8 left-8 w-16 h-16"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-accent/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 h-full w-px bg-gradient-to-t from-accent/50 to-transparent" />
-          </motion.div>
-          <motion.div
-            className="absolute bottom-8 right-8 w-16 h-16"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.9, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <div className="absolute bottom-0 right-0 w-full h-px bg-gradient-to-l from-accent/50 to-transparent" />
-            <div className="absolute bottom-0 right-0 h-full w-px bg-gradient-to-t from-accent/50 to-transparent" />
-          </motion.div>
+
+          {/* Floating particles */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-accent/30 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, -30, 0],
+                  x: [0, Math.random() * 20 - 10, 0],
+                  opacity: [0.2, 0.6, 0.2],
+                  scale: [1, 1.5, 1],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                  ease: 'easeInOut',
+                }}
+              />
+            ))}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

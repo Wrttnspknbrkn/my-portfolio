@@ -34,22 +34,22 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
       {/* Image container */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-foreground-muted/5">
+      <div className="relative aspect-[16/10] overflow-hidden bg-background-secondary">
         {/* Loading skeleton */}
         {!imageLoaded && (
           <div className="absolute inset-0 skeleton" />
         )}
 
-        {/* Image - object-contain to show full image */}
+        {/* Image - fills container while maintaining aspect */}
         <motion.img
           src={Img}
           alt={Title}
-          className={`w-full h-full object-contain bg-background-secondary transition-opacity duration-500 ${
+          className={`w-full h-full object-cover transition-opacity duration-500 ${
             imageLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => setImageLoaded(true)}
           animate={{
-            scale: isHovered ? 1.03 : 1,
+            scale: isHovered ? 1.05 : 1,
           }}
           transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         />

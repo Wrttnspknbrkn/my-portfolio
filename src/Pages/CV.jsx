@@ -465,7 +465,7 @@ const CV = () => {
           </div>
 
           {/* Social links */}
-          <div className="hero-element flex items-center justify-center gap-4">
+          <div className="hero-element flex items-center justify-center gap-4 mb-12">
             <a
               href="https://github.com/Wrttnspknbrkn"
               target="_blank"
@@ -484,12 +484,15 @@ const CV = () => {
             </a>
           </div>
 
-          {/* Scroll indicator */}
+          {/* Scroll indicator - below social links */}
           <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            className="hero-element flex flex-col items-center"
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
+            <span className="font-mono text-[10px] text-foreground-muted/50 uppercase tracking-widest mb-3">
+              Scroll to explore
+            </span>
             <ChevronDown className="w-6 h-6 text-accent/50" />
           </motion.div>
         </div>
